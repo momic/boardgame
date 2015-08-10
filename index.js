@@ -1,4 +1,5 @@
 var express = require('express');
+var minify = require('express-minify');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -8,6 +9,7 @@ var Direction = boardGameModule.getDirection();
 var onlineUsers = [];
 var openGameRooms = [];
 
+app.use(minify({cache: __dirname + '/cache'}));
 app.use(express.static('public'));
 
 app.get('/', function(req, res){
