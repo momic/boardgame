@@ -1,0 +1,18 @@
+.ui-bar-a {
+	background-image : linear-gradient(#B5CA1A,#272721);
+}
+
+.fleft {
+	float: left;
+	display: block;
+}
+
+.fright-margin-10 {
+	display:inline-block;
+	margin-left: 10px;
+}
+
+.fright-margin-20 {
+	display:inline-block;
+	margin-left: 20px !important;
+}
