@@ -1,0 +1,3 @@
+npm install --save express
+npm install --save socket.io
+nohup node index.js 2>&1 > ~/boardgame.out &
