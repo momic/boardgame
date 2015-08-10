@@ -6,8 +6,8 @@
         COLUMNS: 8, // number of columns to display
         ROWS: 8,
 
-        TILE_WIDTH: 48,
-        TILE_HEIGHT: 48,
+        TILE_WIDTH: 40,
+        TILE_HEIGHT: 40,
         TILE_GAP: 1,
     };
 
