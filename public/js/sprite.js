@@ -9,8 +9,8 @@ function Sprite(img, spriteWidth, spriteHeight, positions) {
 }
 
 Sprite.prototype.draw = function(ctxt, index, x, y) {
-  x = isUndefined(x, 0);
-  y = isUndefined(y, 0);  
+  x = utils.isUndefined(x, 0);
+  y = utils.isUndefined(y, 0);  
   var pos = this.positions[index];
   ctxt.drawImage(this.img, pos[0], pos[1], this.width, this.height, x, y, this.entityWidth, this.entityHeight);
 }

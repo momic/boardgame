@@ -2,25 +2,26 @@
  * Tile class
  *
  */
-function Tile(boardX, boardY, tileWidth, tileHeight, tileGap, sprite, side) {
-	destinationY = boardY * (tileHeight + tileGap) + tileGap;
-	destinationX = boardX * (tileWidth  + tileGap) + tileGap;	
+function Tile(entity, gameboard, sprite) {
+	destinationY = entity.y * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
+	destinationX = entity.x * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;	
 
 	Tile._super.constructor.call(this, destinationX, destinationY);
 
-	this.set("width", tileWidth);
-	this.set("height", tileHeight);
-	this.set("gap", tileGap);
+	this.set("width", entity.width * gameboard.tileWidth);
+	this.set("height", entity.height * gameboard.tileHeight);
+	this.set("gap", gameboard.tileGap);
 
 	this.set("fillStyle", "#FFF673");
 	this.set("sprite", sprite);
 	this.setDrawingContext();
 
 	this.set("selected", false);
-	this.set("side", side); // 0 = black, 1 = white
+	this.set("side", entity.side); // 0 = black, 1 = white
+	this.set("clazz", entity.clazz); // knight, bishop, queen, king, rook, pawn
 }
 
-inherits(Tile, ActiveEntity);
+utils.inherits(Tile, ActiveEntity);
 
 
 /**

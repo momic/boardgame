@@ -14,7 +14,7 @@ function Button(text, x, y, onClick, color) {
     this.onClick = onClick;
 }
 
-inherits(Button, Entity);
+utils.inherits(Button, Entity);
 
 /**
  * Draw button entity

@@ -8,7 +8,7 @@ function Gameboard(x, y) {
 	this.initialize();
 }
 
-inherits(Gameboard, Entity);
+utils.inherits(Gameboard, Entity);
 
 /**
  * Create tile enitities
@@ -37,14 +37,14 @@ Gameboard.prototype.initialize = function() {
 	this.statusBox = new StatusBox('');
 	this.statusBox.set("y", Math.round(this.height / 2));
 
-	// create default styled tiles
-	this.createTiles();
+	// default empty tiles
+	this.tiles = [];
 
 	// side to move
 	this.sideToMove = 1;
 
 	// player side
-	this.side = -1;
+	this.playerSide = false;
 }
 
 /**
@@ -71,30 +71,35 @@ Gameboard.prototype.setContextFill = function() {
 /**
  * Create tile entities
  */
-Gameboard.prototype.createTiles = function () {
+Gameboard.prototype.createTiles = function (entities) {
     this.tiles = [];
+    var gameboard = this;
 
-    for(j=0; j<2; j++) {
-		// pawns
-		for(i=0; i<8; i++)
-			this.tiles.push(new Tile(i, (j == 0) ? 1 : 6, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 11 - j * 6], j));
+	entities.forEach(function(entity, index) {
+		var sprite;
+		switch(entity.clazz) {
+			case 'pawn':
+				sprite = (entity.side == 1) ? 5 : 11;
+			break;			
+			case 'rook':
+				sprite = (entity.side == 1) ? 4 : 10;
+			break;			
+			case 'bishop':
+				sprite = (entity.side == 1) ? 2 : 8;
+			break;			
+			case 'queen':
+				sprite = (entity.side == 1) ? 1 : 7;
+			break;			
+			case 'king':
+				sprite = (entity.side == 1) ? 0 : 6;
+			break;			
+			case 'knight':
+				sprite = (entity.side == 1) ? 3 : 9;
+			break;			
+		}
 
-	    // rook
-		this.tiles.push(new Tile(0, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 10 - j * 6, 0, 0], j));
-		this.tiles.push(new Tile(7, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 10 - j * 6, 0, 0], j));
-
-		// bishop
-		this.tiles.push(new Tile(2, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 8 - j * 6], j));
-		this.tiles.push(new Tile(5, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 8 - j * 6], j));
-
-		// queen and king
-		this.tiles.push(new Tile(3, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 7 - j * 6], j));
-		this.tiles.push(new Tile(4, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 6 - j * 6], j));
-
-		// knight
-		this.tiles.push(new Tile(1, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 9 - j * 6], j));
-		this.tiles.push(new Tile(6, j * 7, this.tileWidth, this.tileHeight, this.tileGap, ['chessPiecesSprite', 9 - j * 6], j));		
-    }
+		gameboard.tiles.push(new Tile(entity, gameboard, ['chessPiecesSprite', sprite]));
+	});
 };
 
 /**

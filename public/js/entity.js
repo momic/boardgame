@@ -4,10 +4,10 @@
 function Entity(x, y, width, height)
 {
     // variable defaults 
-    x = isUndefined(x, 0);
-    y = isUndefined(y, 0);
-    width = isUndefined(width, this.ENTITY_WIDTH);
-    height = isUndefined(height, this.ENTITY_HEIGHT);
+    x = utils.isUndefined(x, 0);
+    y = utils.isUndefined(y, 0);
+    width = utils.isUndefined(width, this.ENTITY_WIDTH);
+    height = utils.isUndefined(height, this.ENTITY_HEIGHT);
     
     // position of entity
     this.setPosition(x, y);
@@ -57,12 +57,12 @@ Entity.prototype.setDrawingContext = function () {
  * Set entity fill
  */
 Entity.prototype.setContextFill = function () {
-    this.fillStyle = isUndefined(this.fillStyle, "#FFF673");
+    this.fillStyle = utils.isUndefined(this.fillStyle, "#FFF673");
     this.drawingContext.fillStyle=this.fillStyle;
     this.drawingContext.fillRect(0, 0, this.width, this.height);
     
-    this.strokeStyle = isUndefined(this.strokeStyle, "#bbb");
-    this.strokeWidth = isUndefined(this.strokeWidth, 1);
+    this.strokeStyle = utils.isUndefined(this.strokeStyle, "#bbb");
+    this.strokeWidth = utils.isUndefined(this.strokeWidth, 1);
     this.drawingContext.strokeStyle = this.strokeStyle;
     this.drawingContext.lineWidth   = this.strokeWidth;
     this.drawingContext.strokeRect(0, 0, this.width, this.height);

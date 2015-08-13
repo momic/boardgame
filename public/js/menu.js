@@ -22,7 +22,7 @@ function Menu(x, y, buttons) {
     this.setDrawingContext();
 }
 
-inherits(Menu, Entity);
+utils.inherits(Menu, Entity);
 
 /**
  * Draw menu entity

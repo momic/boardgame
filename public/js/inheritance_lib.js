@@ -10,6 +10,8 @@ if (Object.create === undefined) {
        };
 }
 
+(function(exports){
+
 /**
  * Extend - copy onw propertyes from source to target
  */
@@ -24,7 +26,7 @@ function extend(target, source) {
 /**
  * Inherit
  */
-function inherits(SubC, SuperC) {
+exports.inherits = function (SubC, SuperC) {
        var subProto = Object.create(SuperC.prototype);
        // At the very least, we keep the "constructor" property
        // At most, we keep additions that have already been made
@@ -36,7 +38,7 @@ function inherits(SubC, SuperC) {
 /**
  * protoChain(obj_0, obj_1, ..., obj_n-1, obj_n)
  */  
-function protoChain() {
+exports.protoChain = function () {
     if (arguments.length === 0) return null;
     var prev = arguments[0];
     for(var i=1; i < arguments.length; i++) {
@@ -50,6 +52,11 @@ function protoChain() {
 /**
  * check if variable is undefined
  */
-function isUndefined(x, value) {
+exports.isUndefined = function (x, value) {
     return (typeof x !== 'undefined' ? x : value);
 }
+
+})((typeof exports === 'undefined') ? this['utils']={} : exports);
+
+
+

@@ -100,8 +100,8 @@ GameScreen.prototype.onMouseDown = function(evt)
 				// tile is clicked - open context menu
 				entity.tiles.forEach(function(tile, tileIndex) {
 					if (tile.contains(mousePos.x, mousePos.y) && (entity.sideToMove == tile.side) 
-						&& (entity.sideToMove == entity.side)) 
-						{
+						&& (entity.sideToMove === entity.playerSide)) {
+						
 						tileClicked = true;
 						// stroke that entity
 						tile.toggleSelected();
@@ -116,28 +116,39 @@ GameScreen.prototype.onMouseDown = function(evt)
 				});
 
 				if (!tileClicked && tileToMove !== false)
-					socket.emit('chat message', {"mousePos": mousePos, "tileToMove": tileToMove});
+					socket.emit('move', {"mousePos": mousePos, "tileToMove": tileToMove});
 			}
 		});
 	}
 }
 
-socket.on('chat message', function(msg) {
+socket.on('turn complete', function(msg) {
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
-  	gameboard.tiles.forEach(function(tile, tileIndex) {
-    	if ((tile.x == msg.destinationX) && (tile.y == msg.destinationY)
-    		&& (tile.side != msg.tileToMove.side)) {
 
-      		// take
-      		delete gameboard.tiles[tileIndex];
-    	}
-  	});	
+	// take
+	msg.entitiesDeleted.forEach(function(entity, entityIndex) {
+    	var destinationY = entity.y * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
+    	var destinationX = entity.x * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
 
-  	// move piece
-	gameboard.tiles.forEach(function(tile, tileIndex) {
-		if ((tile.x === msg.tileToMove.x) && (tile.y === msg.tileToMove.y) && (msg.path.length > 0)) {
-			tile.setPath(msg.path);
-		}
+	  	gameboard.tiles.forEach(function(tile, tileIndex) {
+
+	    	if ((tile.x == destinationX) && (tile.y == destinationY)
+	    		&& (tile.side === entity.side) && (tile.side != gameboard.sideToMove)) {
+	      		delete gameboard.tiles[tileIndex];
+	    	}
+	  	});		
+	});
+
+	// move piece
+	msg.entitiesChanged.forEach(function(entity, entityIndex) {
+    	var entityY = entity.y * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
+    	var entityX = entity.x * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
+
+		gameboard.tiles.forEach(function(tile, tileIndex) {
+			if ((tile.x === entityX) && (tile.y === entityY) && (entity.path.length > 0)) {
+				tile.setPath(entity.path);
+			}
+		});
 	});
 
 	// switch sides after move
@@ -147,13 +158,17 @@ socket.on('chat message', function(msg) {
 socket.on('start_game', function(data) {
 	console.log("STARTING GAME...");
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
+
+	// create gameboard tiles
+	gameboard.createTiles(data.entities);
+
 	gameboard.statusBox.setText("");
 	gameboard.set("active", true);
 });
 
 socket.on('side', function(side) {
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
-	gameboard.set("side", side);
+	gameboard.set("playerSide", side);
 });
 
 /**

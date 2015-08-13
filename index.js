@@ -3,11 +3,23 @@ var minify = require('express-minify');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+
+var utils = require('./public/js/inheritance_lib.js');
+var entity = require('./protected/entity.js');
+
+var pawn = require('./protected/pawn.js');
+var rook = require('./protected/rook.js');
+var knight = require('./protected/knight.js');
+var queen = require('./protected/queen.js');
+var king = require('./protected/king.js');
+var bishop = require('./protected/bishop.js');
+
 var boardGameModule = require('./public/js/config.js');
 var Direction = boardGameModule.getDirection();
 
 var onlineUsers = [];
 var openGameRooms = [];
+var activeGameRooms = []; // room_name: {entities:[], entitiesChanged:[], entitiesDeleted:[]}
 
 app.use(minify({cache: __dirname + '/cache'}));
 app.use(express.static('public'));
@@ -24,20 +36,46 @@ io.on('connection', function(socket){
   var socketId = socket.id
   var clientIp = socket.handshake.address;
   console.log('a user connected from adress: ' + clientIp);
-  console.log(socketId);
 
   var activeGameRoom = false;
+  var playerSide = false;
 
   onlineUsers[socketId] = socket;
 
-  socket.on('chat message', function(msg){
+  socket.on('move', function(msg){
     console.log('message: ' + JSON.stringify(msg));
-    if (activeGameRoom == false)
+    if (activeGameRoom === false)
+      return;
+
+    // TODO: check that msg.mousePos.x and msg.mousePos.y is valid move regarding rules and return valid path
+    var entityToMove = false;
+    activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
+      boardY = Math.floor((msg.tileToMove.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap));
+      boardX = Math.floor((msg.tileToMove.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap));
+
+      if ((entity.x == boardX) && (entity.y == boardY) 
+            && (entity.clazz == msg.tileToMove.clazz) && (entity.side === playerSide)) {
+        entityToMove = entity;
+      }
+    });
+
+    if (entityToMove === false)
       return;
 
     boardY = Math.floor((msg.mousePos.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap));
-    boardX = Math.floor((msg.mousePos.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap));  
+    boardX = Math.floor((msg.mousePos.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap));
 
+    // take oponent piece
+    activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
+
+      if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != playerSide)) { 
+        activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
+        delete activeGameRooms[activeGameRoom].entities[index];
+      }
+
+    });
+
+    // destination
     destinationY = boardY * (msg.tileToMove.height + msg.tileToMove.gap) + msg.tileToMove.gap;
     destinationX = boardX * (msg.tileToMove.width  + msg.tileToMove.gap) + msg.tileToMove.gap;
 
@@ -76,38 +114,82 @@ io.on('connection', function(socket){
 
     if (Math.abs(offsetY) > 0)  
       for(j=0; j<Math.abs(offsetY); j++)
-        path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);    
+        path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);
 
-    io.to(activeGameRoom).emit('chat message', {"tileToMove":msg.tileToMove, "destinationY":destinationY, "destinationX":destinationX, "path":path});
+    // set path
+    entityToMove.set("path", path);
+
+    // end turn
+    activeGameRooms[activeGameRoom].entitiesChanged.push(entityToMove);
+    io.to(activeGameRoom).emit('turn complete', 
+      {"entitiesChanged": activeGameRooms[activeGameRoom].entitiesChanged, 
+       "entitiesDeleted": activeGameRooms[activeGameRoom].entitiesDeleted});
+
+    // clean changed and deleted on turn complete
+    activeGameRooms[activeGameRoom].entitiesChanged = [];
+    activeGameRooms[activeGameRoom].entitiesDeleted = [];
+
+    // clean path
+    entityToMove.set("path", []);
+
+    // set position
+    entityToMove.setPosition(boardX, boardY);    
   });
 
   socket.on('ready_for_game', function(msg) {
-    var gameRoom = null;
-    console.log(openGameRooms);
+    // create entities
+    var entities = [];
+    for(j=0; j<2; j++) {
+      // pawn
+      for(i=0; i<8; i++)
+        entities.push(new pawn.Pawn(i, j * 5 + 1, 1, 1, j));
+
+      // rook
+      entities.push(new rook.Rook(0, j * 7, 1, 1, j));
+      entities.push(new rook.Rook(7, j * 7, 1, 1, j));
+
+      // bishop
+      entities.push(new bishop.Bishop(2, j * 7, 1, 1, j));
+      entities.push(new bishop.Bishop(5, j * 7, 1, 1, j));
+
+      // queen and king
+      entities.push(new queen.Queen(3, j * 7, 1, 1, j));
+      entities.push(new king.King(4, j * 7, 1, 1, j));
+
+      // knight
+      entities.push(new knight.Knight(1, j * 7, 1, 1, j));
+      entities.push(new knight.Knight(6, j * 7, 1, 1, j));
+    }
+
+    // check if there is open games
     if (openGameRooms.length == 0) {
       var timestamp = new Date().getTime();
-      gameRoom = socketId + '::' + timestamp;
-      console.log("Creating new: ");
-      socket.join(gameRoom);
-      openGameRooms.push(gameRoom);
-      io.to(socketId).emit('side', 1);
+      activeGameRoom = socketId + '::' + timestamp;
+      // create new room
+      socket.join(activeGameRoom);
+      openGameRooms.push(activeGameRoom);
+
+      playerSide = 1;
+      io.to(socketId).emit('side', playerSide);
     } else {
-      console.log("Using existing: ");
-      gameRoom = openGameRooms.pop()
-      socket.join(gameRoom);
-      console.log(openGameRooms);
-      io.to(socketId).emit('side', 0);
-      io.to(gameRoom).emit('start_game', {"roomId": gameRoom});
+      // use existing
+      activeGameRoom = openGameRooms.pop()
+      socket.join(activeGameRoom);
+      // set player side
+      playerSide = 0;
+      io.to(socketId).emit('side', playerSide);
+
+      // start game
+      io.to(activeGameRoom).emit('start_game', {"roomId": activeGameRoom, "entities": entities});
     }
-    activeGameRoom = gameRoom;
-    console.log(gameRoom);
+
+    // assign active room
+    activeGameRooms[activeGameRoom] = {'entities': entities, 'entitiesChanged': [], 'entitiesDeleted': []};
   });
 
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
-    console.log(socketId);
+  socket.on('disconnect', function() {
     delete onlineUsers[socketId];
-
     // TODO: delete openGameRooms of disconected user
+    // TODO: preserve activeGameRooms of disconected user for a while, give option to return to game
   });
 });

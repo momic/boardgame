@@ -17,7 +17,7 @@ function ActiveEntity(x, y) {
     this.set("gap", boardGameModule.Config.TILE_GAP);
 }
 
-inherits(ActiveEntity, Entity);
+utils.inherits(ActiveEntity, Entity);
 
 /**
  * Apply movement and process it's reactions.
@@ -101,7 +101,7 @@ ActiveEntity.prototype.stop = function () {
  * Sets direction and speed
  */
 ActiveEntity.prototype.setMoveVector = function (direction, speed) {    
-    speed = isUndefined(speed, this.defaultSpeed);
+    speed = utils.isUndefined(speed, this.defaultSpeed);
 
     if (this.direction != direction) {
         this.set("direction", direction);

@@ -8,7 +8,7 @@ function StatusBox(text) {
 
 }
 
-inherits(StatusBox, Entity);
+utils.inherits(StatusBox, Entity);
 
 /**
  * Set status box state
