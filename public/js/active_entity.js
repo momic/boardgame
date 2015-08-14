@@ -115,7 +115,7 @@ ActiveEntity.prototype.setMoveVector = function (direction, speed) {
 /**
  * Set path and speed
  */
-ActiveEntity.prototype.setPath = function (path, speed) {    
+ActiveEntity.prototype.setPath = function (path, flipped, speed) {    
     this.set("path", path);
     this.walkPath(speed);
 }

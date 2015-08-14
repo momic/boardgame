@@ -3,8 +3,8 @@
  *
  */
 function Tile(entity, gameboard, sprite) {
-	destinationY = entity.y * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
-	destinationX = entity.x * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;	
+	destinationY = ((gameboard.flipped) ? (gameboard.boardHeight - 1 - entity.y) : entity.y) * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
+	destinationX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
 
 	Tile._super.constructor.call(this, destinationX, destinationY);
 
@@ -46,6 +46,46 @@ Tile.prototype.toggleSelected = function() {
     }
     else
     	this.setDrawingContext();
+}
+
+Tile.prototype.setFlippedPosition = function(gameboard) {
+    flippedY = gameboard.boardHeight * (this.height + this.gap) - this.height - this.y + this.gap;
+    flippedX = gameboard.boardWidth * (this.width  + this.gap) - this.width - this.x + this.gap;
+    this.setPosition(flippedX, flippedY);	
+}
+
+Tile.prototype.getFlippedPath = function(entity) {
+	var flippedPath = [];
+	entity.path.forEach(function(direction, directionIndex) {
+		switch (direction[0]) {
+			case (boardGameModule.Direction.UP[0]):
+				flippedPath.push(boardGameModule.Direction.DOWN);
+			break;
+			case (boardGameModule.Direction.DOWN[0]):
+				flippedPath.push(boardGameModule.Direction.UP);
+			break;
+			case (boardGameModule.Direction.RIGHT[0]):
+				flippedPath.push(boardGameModule.Direction.LEFT);
+			break;
+			case (boardGameModule.Direction.LEFT[0]):
+				flippedPath.push(boardGameModule.Direction.RIGHT);
+			break;
+			case (boardGameModule.Direction.UPLEFT[0]):
+				flippedPath.push(boardGameModule.Direction.DOWNRIGHT);
+			break;
+			case (boardGameModule.Direction.UPRIGHT[0]):
+				flippedPath.push(boardGameModule.Direction.DOWNLEFT);
+			break;
+			case (boardGameModule.Direction.DOWNLEFT[0]):
+				flippedPath.push(boardGameModule.Direction.UPRIGHT);
+			break;
+			case (boardGameModule.Direction.DOWNRIGHT[0]):
+				flippedPath.push(boardGameModule.Direction.UPLEFT);
+			break;
+		}
+	});	
+
+	return flippedPath;
 }
 
 

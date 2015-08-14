@@ -43,37 +43,25 @@ io.on('connection', function(socket){
   onlineUsers[socketId] = socket;
 
   socket.on('move', function(msg){
-    console.log('message: ' + JSON.stringify(msg));
     if (activeGameRoom === false)
       return;
 
-    // TODO: check that msg.mousePos.x and msg.mousePos.y is valid move regarding rules and return valid path
+    var boardY = (msg.tileToMove.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap);
+    var boardX = (msg.tileToMove.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap);
+
     var entityToMove = false;
     activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
-      boardY = Math.floor((msg.tileToMove.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap));
-      boardX = Math.floor((msg.tileToMove.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap));
-
       if ((entity.x == boardX) && (entity.y == boardY) 
             && (entity.clazz == msg.tileToMove.clazz) && (entity.side === playerSide)) {
         entityToMove = entity;
       }
     });
-
     if (entityToMove === false)
       return;
 
-    boardY = Math.floor((msg.mousePos.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap));
-    boardX = Math.floor((msg.mousePos.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap));
-
-    // take oponent piece
-    activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
-
-      if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != playerSide)) { 
-        activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
-        delete activeGameRooms[activeGameRoom].entities[index];
-      }
-
-    });
+    // board coordinates destination
+    var boardY = Math.floor((msg.mousePos.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap));
+    var boardX = Math.floor((msg.mousePos.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap));
 
     // destination
     destinationY = boardY * (msg.tileToMove.height + msg.tileToMove.gap) + msg.tileToMove.gap;
@@ -116,11 +104,28 @@ io.on('connection', function(socket){
       for(j=0; j<Math.abs(offsetY); j++)
         path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);
 
+    // TODO: check that destination is valid move regarding rules
+    // var validMove = entityToMove.checkMove(activeGameRooms[activeGameRoom].entities, path);
+    // if (validMove === false)
+    //   return;
+
+    // take oponent piece
+    activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
+
+      if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != playerSide)) { 
+        activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
+        delete activeGameRooms[activeGameRoom].entities[index];
+      }
+
+    });    
+
     // set path
     entityToMove.set("path", path);
+    activeGameRooms[activeGameRoom].entitiesChanged.push(entityToMove);
 
     // end turn
-    activeGameRooms[activeGameRoom].entitiesChanged.push(entityToMove);
+    // TODO: improve diferential mechanism of sending data to client side 
+    // to include only properties that have been changed
     io.to(activeGameRoom).emit('turn complete', 
       {"entitiesChanged": activeGameRooms[activeGameRoom].entitiesChanged, 
        "entitiesDeleted": activeGameRooms[activeGameRoom].entitiesDeleted});

@@ -109,14 +109,29 @@ GameScreen.prototype.onMouseDown = function(evt)
 					} else { 
 						if (tile.selected) {
 							tile.toggleSelected();
-							if (entity.sideToMove == tile.side)
+							if (entity.sideToMove == tile.side) {
 								tileToMove = tile;
+								if (entity.flipped) {
+									tileToMove.setFlippedPosition(entity);
+
+									mousePos.x = entity.width - mousePos.x;
+									mousePos.y = entity.height - mousePos.y;
+								}
+							}
+								
 						}
 					}
 				});
 
-				if (!tileClicked && tileToMove !== false)
+				if (!tileClicked && tileToMove !== false) {
 					socket.emit('move', {"mousePos": mousePos, "tileToMove": tileToMove});
+					if (entity.flipped) {
+						tileToMove.setFlippedPosition(entity);
+
+						mousePos.x = entity.width - mousePos.x;
+						mousePos.y = entity.height - mousePos.y;
+					}									
+				}
 			}
 		});
 	}
@@ -127,8 +142,8 @@ socket.on('turn complete', function(msg) {
 
 	// take
 	msg.entitiesDeleted.forEach(function(entity, entityIndex) {
-    	var destinationY = entity.y * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
-    	var destinationX = entity.x * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
+    	var destinationY = ((gameboard.flipped) ? (gameboard.boardHeight - 1 - entity.y) : entity.y) * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
+    	var destinationX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
 
 	  	gameboard.tiles.forEach(function(tile, tileIndex) {
 
@@ -141,12 +156,12 @@ socket.on('turn complete', function(msg) {
 
 	// move piece
 	msg.entitiesChanged.forEach(function(entity, entityIndex) {
-    	var entityY = entity.y * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
-    	var entityX = entity.x * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
+    	var entityY = ((gameboard.flipped) ? (gameboard.boardHeight - 1 - entity.y) : entity.y) * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
+    	var entityX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
 
 		gameboard.tiles.forEach(function(tile, tileIndex) {
 			if ((tile.x === entityX) && (tile.y === entityY) && (entity.path.length > 0)) {
-				tile.setPath(entity.path);
+				tile.setPath((gameboard.flipped) ? tile.getFlippedPath(entity) : entity.path);
 			}
 		});
 	});
@@ -169,6 +184,7 @@ socket.on('start_game', function(data) {
 socket.on('side', function(side) {
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
 	gameboard.set("playerSide", side);
+	gameboard.set("flipped", (side == 0));
 });
 
 /**

@@ -30,6 +30,9 @@ Gameboard.prototype.initialize = function() {
 	// gameboard active
 	this.active = false;
 
+	// flipped
+	this.flipped = false;
+
 	// update gameboard fill and properties
 	this.setDrawingContext();
 
