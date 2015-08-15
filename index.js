@@ -105,18 +105,24 @@ io.on('connection', function(socket){
         path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);
 
     // TODO: check that destination is valid move regarding rules
-    // var validMove = entityToMove.checkMove(activeGameRooms[activeGameRoom].entities, path);
-    // if (validMove === false)
-    //   return;
+    var validMove = entityToMove.checkMove(activeGameRooms[activeGameRoom].entities, path);
+    if (validMove === false)
+      return;
 
     // take oponent piece
     activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
+      if (entity.enpassaned) {
+        activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
+        delete activeGameRooms[activeGameRoom].entities[index];        
+      }
 
       if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != playerSide)) { 
         activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
         delete activeGameRooms[activeGameRoom].entities[index];
       }
 
+      if (entity.enpassan)
+        entity.set("enpassan", false);
     });    
 
     // set path

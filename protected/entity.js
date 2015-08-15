@@ -47,6 +47,13 @@ Entity.prototype.contains = function (x, y) {
 }
 
 /**
+ * Check entity move
+ */
+Entity.prototype.checkMove = function (entities, path) {
+    return true;
+}
+
+/**
  * Entity setter
  */
 Entity.prototype.set = function (key, value) { 

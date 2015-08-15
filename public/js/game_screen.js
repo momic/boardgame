@@ -109,21 +109,19 @@ GameScreen.prototype.onMouseDown = function(evt)
 					} else { 
 						if (tile.selected) {
 							tile.toggleSelected();
-							if (entity.sideToMove == tile.side) {
+							if (entity.sideToMove == tile.side)
 								tileToMove = tile;
-								if (entity.flipped) {
-									tileToMove.setFlippedPosition(entity);
-
-									mousePos.x = entity.width - mousePos.x;
-									mousePos.y = entity.height - mousePos.y;
-								}
-							}
-								
 						}
 					}
 				});
 
 				if (!tileClicked && tileToMove !== false) {
+					if (entity.flipped) {
+						tileToMove.setFlippedPosition(entity);
+
+						mousePos.x = entity.width - mousePos.x;
+						mousePos.y = entity.height - mousePos.y;
+					}					
 					socket.emit('move', {"mousePos": mousePos, "tileToMove": tileToMove});
 					if (entity.flipped) {
 						tileToMove.setFlippedPosition(entity);
