@@ -15,12 +15,15 @@ ScreenRepository.prototype.mainMenuScreen = function()
 	menuButtons = [];
 	var startGameButton = new Button("Start Game", 0, 0, this.startGameButtonClick, "#777");
 	menuButtons.push(startGameButton);
-	var optionsButton = new Button("Options", 0, 0, this.optionsButtonClick, "#999");
-	menuButtons.push(optionsButton);
-	var helpButton = new Button("Help", 0, 0, this.helpButtonClick, "#777");
-	menuButtons.push(helpButton);
-	// TODO: calculate coordinates for menu
-	var mainMenu = new Menu(10, 10, menuButtons);
+	// var optionsButton = new Button("Options", 0, 0, this.optionsButtonClick, "#999");
+	// menuButtons.push(optionsButton);
+	// var helpButton = new Button("Help", 0, 0, this.helpButtonClick, "#777");
+	// menuButtons.push(helpButton);
+
+	// center menu
+	var menuX = Math.round((boardGameModule.Config.WIDTH - startGameButton.width) / 2);
+	var menuY = Math.round((boardGameModule.Config.HEIGHT - startGameButton.height * menuButtons.length) / 2);
+	var mainMenu = new Menu(menuX, menuY, menuButtons);
 
 	var mainMenuScreen = new Screen("mainMenuScreen");
 	mainMenuScreen.addEntity("mainMenu", mainMenu);

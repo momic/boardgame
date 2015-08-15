@@ -9,6 +9,14 @@
         TILE_WIDTH: 40,
         TILE_HEIGHT: 40,
         TILE_GAP: 1,
+
+        update: function(tileWidth, tileHeight, tileGap) {
+            this.TILE_WIDTH = tileWidth;
+            this.TILE_HEIGHT = tileHeight;
+            this.TILE_GAP = tileGap;
+            this.WIDTH = this.TILE_GAP + this.COLUMNS * (this.TILE_WIDTH + this.TILE_GAP);
+            this.HEIGHT = this.TILE_GAP + this.ROWS * (this.TILE_HEIGHT + this.TILE_GAP);
+        },
     };
 
     // canvas size

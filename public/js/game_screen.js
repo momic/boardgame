@@ -3,11 +3,11 @@
  */
 function GameScreen()
 {
-	// Canvas
-	this.initCanvasElement();
-
 	// Sprites
 	this.spriteRepository = new SpriteRepository();
+
+	// Canvas
+	this.initCanvasElement();
 
 	// Screens
 	this.screenRepository = new ScreenRepository();
@@ -116,6 +116,7 @@ GameScreen.prototype.onMouseDown = function(evt)
 				});
 
 				if (!tileClicked && tileToMove !== false) {
+					// TODO: clone tileToMove and mousePos so we don't need to flipp coordinates twice
 					if (entity.flipped) {
 						tileToMove.setFlippedPosition(entity);
 

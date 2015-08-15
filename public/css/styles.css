@@ -1,9 +1,18 @@
-.ui-bar-a {
-	background-image : linear-gradient(#B5CA1A,#272721);
+.header-fill {
+	background-image : linear-gradient(#aaa,#ddd);
+}
+
+.footer-fill {
+	background-image : linear-gradient(#ddd,#aaa);
 }
 
 .fleft {
 	float: left;
+	display: block;
+}
+
+.fright {
+	float: right;
 	display: block;
 }
 
@@ -15,4 +24,57 @@
 .fright-margin-20 {
 	display:inline-block;
 	margin-left: 20px !important;
+}
+
+.center-text {
+	text-align: center;
+	vertical-align: middle;
+}
+
+.left-text {
+	text-align: left;
+	vertical-align: middle;
+}
+
+.right-text {
+	text-align: right;
+	vertical-align: middle;
+}
+
+@media(max-width:767px){
+	#canvas {
+	    border: 2px solid;
+	    border-radius: 5px;
+	    margin: 10px;
+	}	
+}
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+	#canvas {
+	    border: 3px solid;
+	    border-radius: 8px;
+	    margin: 10px;
+	}
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+	#canvas {
+	    border: 3px solid;
+	    border-radius: 10px;
+	    margin: 10px;
+	}	
+
+}
+
+/* Large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+	#canvas {
+	    border: 4px solid;
+	    border-radius: 12px;
+	    margin: 10px;
+
+	}	
+
 }

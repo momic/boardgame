@@ -7,11 +7,12 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 
-		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-		<link rel="stylesheet" href="css/styles.css" />
-		
-		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-		<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/styles.css" />		
+  
+  		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
 		<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 		<script>
 		  var socket = io();
@@ -34,16 +35,25 @@
 		<script type="text/javascript" src="js/game_loop.js"></script>
 	</head>
 	<body>
-		<div data-role="page" id="home">
-			<div data-role="header">
-				<h1>Board Game</h1>
+		<div class="row">
+			<div class="col-xs-12 col-sm-12 col-md-12 header-fill">
+				<div class="col-xs-6 col-sm-6 col-md-6 left-text">
+					<h4>White: Player1</h4>
+				</div>
+				<div class="col-xs-6 col-sm-6 col-md-6 right-text">
+					<h4>Black: Player2</h4>
+				</div>
 			</div>
-			<div data-role="content">
-				<canvas id="canvas" class="fleft" tabindex = "0"></canvas>
-			</div>
-			<div data-role="footer">
-				 <h4>Copyright by Optimal Solutions</h4>
-			</div>
-		</div>        
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-12 col-md-12 center-text">
+				<canvas id="canvas" tabindex="0"></canvas>
+			</div>			
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-12 col-md-12 center-text footer-fill">
+				<h4>Copyright by Optimal Solutions</h4>
+			</div>			
+		</div>
 	</body>
 </html>
