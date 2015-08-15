@@ -199,8 +199,14 @@ io.on('connection', function(socket){
   });
 
   socket.on('disconnect', function() {
+    // delete it from online users
     delete onlineUsers[socketId];
-    // TODO: delete openGameRooms of disconected user
+
+    // delete openGameRooms of disconected user
+    var openGameRoomIndex = openGameRooms.indexOf(activeGameRoom);
+    if (openGameRoomIndex > -1)
+      openGameRooms.splice(openGameRoomIndex, 1);
+
     // TODO: preserve activeGameRooms of disconected user for a while, give option to return to game
   });
 });
