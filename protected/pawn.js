@@ -37,7 +37,8 @@ Pawn.prototype.checkMove = function (entities, path) {
 		|| ((Direction.getdy(direction) > 0) 
 			&& (direction != Direction.DOWN)
 			&& (direction != Direction.DOWNRIGHT)
-			&& (direction != Direction.DOWNLEFT)))
+			&& (direction != Direction.DOWNLEFT))
+		||	(Direction.getdy(direction) == 0))
 
 			isValid = false
 	});	
@@ -81,7 +82,7 @@ Pawn.prototype.checkMove = function (entities, path) {
 				((entity.y == (pawnPiece.y + Direction.getdy(path[0]) * 2)))) {
 				pawnPiece.enpassan  = true;
 				pawnPiece.enpassanX = pawnPiece.x;
-				pawnPiece.enpassanY = pawnPiece.y + Direction.getdy(path[0]);				
+				pawnPiece.enpassanY = pawnPiece.y + Direction.getdy(path[0]);
 			}
 		});		
 	} else {
@@ -114,7 +115,6 @@ Pawn.prototype.checkMove = function (entities, path) {
 						isValid = true;
 						if (entity.enpassan)
 							entity.enpassaned = true;
-							
 					}
 			});
 

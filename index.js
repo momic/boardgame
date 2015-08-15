@@ -104,7 +104,7 @@ io.on('connection', function(socket){
       for(j=0; j<Math.abs(offsetY); j++)
         path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);
 
-    // TODO: check that destination is valid move regarding rules
+    // check that destination is valid move regarding rules
     var validMove = entityToMove.checkMove(activeGameRooms[activeGameRoom].entities, path);
     if (validMove === false)
       return;
@@ -116,12 +116,12 @@ io.on('connection', function(socket){
         delete activeGameRooms[activeGameRoom].entities[index];        
       }
 
-      if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != playerSide)) { 
+      if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != entityToMove.side)) { 
         activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
         delete activeGameRooms[activeGameRoom].entities[index];
       }
 
-      if (entity.enpassan)
+      if (entity.enpassan && (entity.side != entityToMove.side))
         entity.set("enpassan", false);
     });    
 
