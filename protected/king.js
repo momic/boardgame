@@ -23,6 +23,7 @@ King.prototype.checkMove = function (entities, path) {
 
 	// TODO: chess rochade (big and small)
 	// check that fields are not under attack
+	// check that king is not under chess => no other move can be made
 
 	// check for piece blocking multi step move
 	// allow last step to be oponent piece

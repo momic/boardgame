@@ -31,6 +31,7 @@
 		<script type="text/javascript" src="js/screen.js"></script>
 		<script type="text/javascript" src="js/screen_repository.js"></script>
 
+		<script type="text/javascript" src="js/player.js"></script>
 		<script type="text/javascript" src="js/game_screen.js"></script>
 		<script type="text/javascript" src="js/game_loop.js"></script>
 	</head>
@@ -38,10 +39,10 @@
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 header-fill">
 				<div class="col-xs-6 col-sm-6 col-md-6 left-text">
-					<h4>White: Player1</h4>
+					<h4 id="left-header-text"></h4>
 				</div>
 				<div class="col-xs-6 col-sm-6 col-md-6 right-text">
-					<h4>Black: Player2</h4>
+					<h4 id="right-header-text"></h4>
 				</div>
 			</div>
 		</div>
@@ -55,5 +56,27 @@
 				<h4>Copyright by Optimal Solutions</h4>
 			</div>			
 		</div>
+		<!-- Small modal -->
+		<div id="playerNameModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+		  <div class="modal-dialog modal-sm">
+		    <div class="modal-content">
+				<div class="modal-header">
+				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				    <h4 class="modal-title" id="exampleModalLabel">Enter your name</h4>
+				</div>
+				<div class="modal-body">
+					<form>
+				    	<div class="form-group">
+				        	<label for="nick-name" class="control-label">Nick:</label>
+				        	<input type="text" class="form-control" id="nick-name">
+				        </div>
+				    </form>
+				</div>
+		        <div class="modal-footer">
+		        	<button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
+		      	</div>
+		    </div>
+		  </div>
+		</div>		
 	</body>
 </html>

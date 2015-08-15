@@ -45,9 +45,6 @@ Gameboard.prototype.initialize = function() {
 
 	// side to move
 	this.sideToMove = 1;
-
-	// player side
-	this.playerSide = false;
 }
 
 /**

@@ -17,6 +17,8 @@ var bishop = require('./protected/bishop.js');
 var boardGameModule = require('./public/js/config.js');
 var Direction = boardGameModule.getDirection();
 
+var playerModule = require('./public/js/player.js');
+
 var onlineUsers = [];
 var openGameRooms = [];
 var activeGameRooms = []; // room_name: {entities:[], entitiesChanged:[], entitiesDeleted:[]}
@@ -33,26 +35,28 @@ http.listen(3000, function(){
 });
 
 io.on('connection', function(socket){
-  var socketId = socket.id
-  var clientIp = socket.handshake.address;
-  console.log('a user connected from adress: ' + clientIp);
+  // player object
+  var activePlayer = new playerModule.Player();
+  activePlayer.set("socketId", socket.id);
+  activePlayer.set("activeGameRoom", false);
+  activePlayer.set("clientIp", socket.handshake.address);
+  console.log('a user connected from adress: ' + activePlayer.clientIp);
 
-  var activeGameRoom = false;
-  var playerSide = false;
+  // online users  
+  onlineUsers[activePlayer.socketId] = socket;
 
-  onlineUsers[socketId] = socket;
-
+  // move event
   socket.on('move', function(msg){
-    if (activeGameRoom === false)
+    if (activePlayer.activeGameRoom === false)
       return;
 
     var boardY = (msg.tileToMove.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap);
     var boardX = (msg.tileToMove.x - msg.tileToMove.gap) / (msg.tileToMove.width  + msg.tileToMove.gap);
 
     var entityToMove = false;
-    activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
+    activeGameRooms[activePlayer.activeGameRoom].entities.forEach(function(entity, index) {
       if ((entity.x == boardX) && (entity.y == boardY) 
-            && (entity.clazz == msg.tileToMove.clazz) && (entity.side === playerSide)) {
+            && (entity.clazz == msg.tileToMove.clazz) && (entity.side === activePlayer.side)) {
         entityToMove = entity;
       }
     });
@@ -105,40 +109,40 @@ io.on('connection', function(socket){
         path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);
 
     // check that destination is valid move regarding rules
-    var validMove = entityToMove.checkMove(activeGameRooms[activeGameRoom].entities, path);
+    var validMove = entityToMove.checkMove(activeGameRooms[activePlayer.activeGameRoom].entities, path);
     if (validMove === false)
       return;
 
     // take oponent piece
-    activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
+    activeGameRooms[activePlayer.activeGameRoom].entities.forEach(function(entity, index) {
       if (entity.enpassaned) {
         // delete enitity if taken by enpassan
-        activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
-        delete activeGameRooms[activeGameRoom].entities[index];        
+        activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted.push(entity);
+        delete activeGameRooms[activePlayer.activeGameRoom].entities[index];        
       } else // disable enpassan on next oponent move if not taken above
         if (entity.enpassan && (entity.side != entityToMove.side))
           entity.set("enpassan", false);
 
       if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != entityToMove.side)) { 
-        activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
-        delete activeGameRooms[activeGameRoom].entities[index];
+        activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted.push(entity);
+        delete activeGameRooms[activePlayer.activeGameRoom].entities[index];
       }
     });    
 
     // set path
     entityToMove.set("path", path);
-    activeGameRooms[activeGameRoom].entitiesChanged.push(entityToMove);
+    activeGameRooms[activePlayer.activeGameRoom].entitiesChanged.push(entityToMove);
 
     // end turn
     // TODO: improve diferential mechanism of sending data to client side 
     // to include only properties that have been changed
-    io.to(activeGameRoom).emit('turn complete', 
-      {"entitiesChanged": activeGameRooms[activeGameRoom].entitiesChanged, 
-       "entitiesDeleted": activeGameRooms[activeGameRoom].entitiesDeleted});
+    io.to(activePlayer.activeGameRoom).emit('turn complete', 
+      {"entitiesChanged": activeGameRooms[activePlayer.activeGameRoom].entitiesChanged, 
+       "entitiesDeleted": activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted});
 
     // clean changed and deleted on turn complete
-    activeGameRooms[activeGameRoom].entitiesChanged = [];
-    activeGameRooms[activeGameRoom].entitiesDeleted = [];
+    activeGameRooms[activePlayer.activeGameRoom].entitiesChanged = [];
+    activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted = [];
 
     // clean path
     entityToMove.set("path", []);
@@ -147,65 +151,75 @@ io.on('connection', function(socket){
     entityToMove.setPosition(boardX, boardY);    
   });
 
-  socket.on('ready_for_game', function(msg) {
-    // create entities
-    var entities = [];
-    for(j=0; j<2; j++) {
-      // pawn
-      for(i=0; i<8; i++)
-        entities.push(new pawn.Pawn(i, j * 5 + 1, 1, 1, j));
-
-      // rook
-      entities.push(new rook.Rook(0, j * 7, 1, 1, j));
-      entities.push(new rook.Rook(7, j * 7, 1, 1, j));
-
-      // bishop
-      entities.push(new bishop.Bishop(2, j * 7, 1, 1, j));
-      entities.push(new bishop.Bishop(5, j * 7, 1, 1, j));
-
-      // queen and king
-      entities.push(new queen.Queen(3, j * 7, 1, 1, j));
-      entities.push(new king.King(4, j * 7, 1, 1, j));
-
-      // knight
-      entities.push(new knight.Knight(1, j * 7, 1, 1, j));
-      entities.push(new knight.Knight(6, j * 7, 1, 1, j));
-    }
-
+  // ready for game event
+  socket.on('ready_for_game', function(player) {
     // check if there is open games
     if (openGameRooms.length == 0) {
       var timestamp = new Date().getTime();
-      activeGameRoom = socketId + '::' + timestamp;
+      activePlayer.activeGameRoom = activePlayer.socketId + '::' + timestamp;
       // create new room
-      socket.join(activeGameRoom);
-      openGameRooms.push(activeGameRoom);
+      socket.join(activePlayer.activeGameRoom);
 
-      playerSide = 1;
-      io.to(socketId).emit('side', playerSide);
+      // set as white
+      activePlayer.side = 1;
+      // set nick from client object
+      activePlayer.nick = player.nick;
+
+      openGameRooms.push(activePlayer); //{"room": activePlayer.activeGameRoom, "whitePlayer": player}
+      io.to(activePlayer.socketId).emit('side', activePlayer);
     } else {
       // use existing
-      activeGameRoom = openGameRooms.pop()
-      socket.join(activeGameRoom);
+      var openGameRoom = openGameRooms.pop();
+      activePlayer.activeGameRoom = openGameRoom.activeGameRoom;
+      socket.join(activePlayer.activeGameRoom);
       // set player side
-      playerSide = 0;
-      io.to(socketId).emit('side', playerSide);
+      activePlayer.side = 0;
+      // set nick from client object
+      activePlayer.nick = player.nick;
 
+      io.to(activePlayer.socketId).emit('side', activePlayer);
+
+      // create entities
+      var entities = [];
+      for(j=0; j<2; j++) {
+        // pawn
+        for(i=0; i<8; i++)
+          entities.push(new pawn.Pawn(i, j * 5 + 1, 1, 1, j));
+
+        // rook
+        entities.push(new rook.Rook(0, j * 7, 1, 1, j));
+        entities.push(new rook.Rook(7, j * 7, 1, 1, j));
+
+        // bishop
+        entities.push(new bishop.Bishop(2, j * 7, 1, 1, j));
+        entities.push(new bishop.Bishop(5, j * 7, 1, 1, j));
+
+        // queen and king
+        entities.push(new queen.Queen(3, j * 7, 1, 1, j));
+        entities.push(new king.King(4, j * 7, 1, 1, j));
+
+        // knight
+        entities.push(new knight.Knight(1, j * 7, 1, 1, j));
+        entities.push(new knight.Knight(6, j * 7, 1, 1, j));
+      }      
+
+      // assign active room
+      activeGameRooms[activePlayer.activeGameRoom] = {'entities': entities, 'entitiesChanged': [], 'entitiesDeleted': [], "whitePlayer": openGameRoom, "blackPlayer": activePlayer};
       // start game
-      io.to(activeGameRoom).emit('start_game', {"roomId": activeGameRoom, "entities": entities});
+      io.to(activePlayer.activeGameRoom).emit('start_game', {"entities": entities, "whitePlayer": openGameRoom, "blackPlayer": activePlayer}); //"roomId": activePlayer.activeGameRoom, 
     }
-
-    // assign active room
-    activeGameRooms[activeGameRoom] = {'entities': entities, 'entitiesChanged': [], 'entitiesDeleted': []};
   });
 
+  // disconnect event
   socket.on('disconnect', function() {
     // delete it from online users
-    delete onlineUsers[socketId];
+    delete onlineUsers[activePlayer.socketId];
 
     // delete openGameRooms of disconected user
-    var openGameRoomIndex = openGameRooms.indexOf(activeGameRoom);
-    if (openGameRoomIndex > -1)
-      openGameRooms.splice(openGameRoomIndex, 1);
+    openGameRooms.forEach(function(openGameRoom, openGameRoomIndex) {
+      if (openGameRoom.activeGameRoom == activePlayer.activeGameRoom)
+        openGameRooms.splice(openGameRoomIndex, 1);  
+    });
 
     // TODO: preserve activeGameRooms of disconected user for a while, give option to return to game
   });

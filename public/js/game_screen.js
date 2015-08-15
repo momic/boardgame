@@ -14,6 +14,9 @@ function GameScreen()
 
 	// Active screen
 	this.activeScreen = this.screenRepository.mainMenuScreen();
+
+	// Player
+	this.player = new playerModule.Player();
 }
 
 /**
@@ -100,7 +103,7 @@ GameScreen.prototype.onMouseDown = function(evt)
 				// tile is clicked - open context menu
 				entity.tiles.forEach(function(tile, tileIndex) {
 					if (tile.contains(mousePos.x, mousePos.y) && (entity.sideToMove == tile.side) 
-						&& (entity.sideToMove === entity.playerSide)) {
+						&& (entity.sideToMove === gameScreen.player.side)) {
 						
 						tileClicked = true;
 						// stroke that entity
@@ -171,6 +174,9 @@ socket.on('turn complete', function(msg) {
 
 socket.on('start_game', function(data) {
 	console.log("STARTING GAME...");
+	$('#left-header-text').text('White: ' + data.whitePlayer.nick);
+	$('#right-header-text').text('Black: ' + data.blackPlayer.nick);
+
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
 
 	// create gameboard tiles
@@ -180,10 +186,11 @@ socket.on('start_game', function(data) {
 	gameboard.set("active", true);
 });
 
-socket.on('side', function(side) {
+socket.on('side', function(player) {
+	gameScreen.player.set("side", player.side);
+
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
-	gameboard.set("playerSide", side);
-	gameboard.set("flipped", (side == 0));
+	gameboard.set("flipped", (player.side == 0));
 });
 
 /**
