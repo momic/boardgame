@@ -112,17 +112,17 @@ io.on('connection', function(socket){
     // take oponent piece
     activeGameRooms[activeGameRoom].entities.forEach(function(entity, index) {
       if (entity.enpassaned) {
+        // delete enitity if taken by enpassan
         activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
         delete activeGameRooms[activeGameRoom].entities[index];        
-      }
+      } else // disable enpassan on next oponent move if not taken above
+        if (entity.enpassan && (entity.side != entityToMove.side))
+          entity.set("enpassan", false);
 
       if ((entity.x == boardX) && (entity.y == boardY) && (entity.side != entityToMove.side)) { 
         activeGameRooms[activeGameRoom].entitiesDeleted.push(entity);
         delete activeGameRooms[activeGameRoom].entities[index];
       }
-
-      if (entity.enpassan && (entity.side != entityToMove.side))
-        entity.set("enpassan", false);
     });    
 
     // set path
