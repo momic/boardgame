@@ -49,7 +49,7 @@ Entity.prototype.contains = function (x, y) {
 /**
  * Check entity move
  */
-Entity.prototype.checkMove = function (entities, path) {
+Entity.prototype.checkMove = function (entities, path, entitiesChanged) {
     return true;
 }
 

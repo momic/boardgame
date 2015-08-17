@@ -109,7 +109,8 @@ io.on('connection', function(socket){
         path.push((offsetY > 0) ? Direction.DOWN : Direction.UP);
 
     // check that destination is valid move regarding rules
-    var validMove = entityToMove.checkMove(activeGameRooms[activePlayer.activeGameRoom].entities, path);
+    var validMove = entityToMove.checkMove(activeGameRooms[activePlayer.activeGameRoom].entities, path, 
+                                           activeGameRooms[activePlayer.activeGameRoom].entitiesChanged);
     if (validMove === false)
       return;
 
@@ -140,15 +141,25 @@ io.on('connection', function(socket){
       {"entitiesChanged": activeGameRooms[activePlayer.activeGameRoom].entitiesChanged, 
        "entitiesDeleted": activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted});
 
+    activeGameRooms[activePlayer.activeGameRoom].entitiesChanged.forEach(function(entity, entityIndex) {
+      // clean path and set position
+      var path = entity.path;
+      var boardX = entity.x;
+      var boardY = entity.y;
+      path.forEach(function(direction, directionIndex) {
+        boardX += Direction.getdx(direction);
+        boardY += Direction.getdy(direction);
+      });
+
+      // set position and clean path
+      entity.setPosition(boardX, boardY);
+      entity.set("path", []);
+    });
+
     // clean changed and deleted on turn complete
     activeGameRooms[activePlayer.activeGameRoom].entitiesChanged = [];
     activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted = [];
 
-    // clean path
-    entityToMove.set("path", []);
-
-    // set position
-    entityToMove.setPosition(boardX, boardY);    
   });
 
   // ready for game event
