@@ -17,6 +17,10 @@ utils.inherits(Queen, entity.Entity);
  * Check entity move
  */
 Queen.prototype.checkMove = function (entities, path) {
+	var isValid = Queen._super.checkMove.call(this, entities, path);
+	if (!isValid)
+		return false;
+
 	// queen can't move more than seven fields
 	if (path.length > 7)
 		return false;

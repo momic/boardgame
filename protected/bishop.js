@@ -14,9 +14,53 @@ function Bishop(x, y, width, height, side) {
 utils.inherits(Bishop, entity.Entity);
 
 /**
+ * Check if entity attacks tiles
+ */
+Bishop.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+	var diffX = Math.abs(this.x - tileX);
+	var diffY = Math.abs(this.y - tileY);
+
+	if (diffX != diffY)
+		return false;
+
+	var minX = Math.min(this.x, tileX);
+	var minY = Math.min(this.y, tileY);
+
+	var i = this.x;
+	var j = this.y;
+	var incrX = (minX == this.x) ? 1 : -1;
+	var incrY = (minY == this.y) ? 1 : -1;
+	var tilesToCheck = {};
+	var attacks = true;
+	while (Math.abs(i - tileX) > 1)	{
+		i += incrX;
+		j += incrY;
+		
+		tilesToCheck[i] = j;
+		if ((destinationX == i) && (destinationY == j))
+			attacks = false;
+	}
+
+	if (!attacks)
+		return false;
+	
+	entities.forEach(function(entity, entityIndex) {
+		if (tilesToCheck[entity.x] == entity.y)
+			attacks = false;
+	});
+
+    return attacks;
+}
+
+
+/**
  * Check entity move
  */
 Bishop.prototype.checkMove = function (entities, path) {
+	var isValid = Bishop._super.checkMove.call(this, entities, path);
+	if (!isValid)
+		return false;
+
 	// bishop can't move more than seven fields
 	if (path.length > 7)
 		return false;

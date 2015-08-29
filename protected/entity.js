@@ -1,5 +1,9 @@
 var utils = require('../public/js/inheritance_lib.js');
 
+var boardGameModule = require('../public/js/config.js');
+var Direction = boardGameModule.getDirection();
+
+
 function Entity(x, y, width, height, side, clazz)
 {
     // variable defaults 
@@ -43,14 +47,52 @@ Entity.prototype.contains = function (x, y) {
         this.y <= y && y <= this.y + this.height) {
         return true;
     }
-    return false;    
+    return false;
 }
 
 /**
  * Check entity move
  */
 Entity.prototype.checkMove = function (entities, path, entitiesChanged) {
-    return true;
+    var thisPiece = this;    
+
+    var destinationX = thisPiece.x;
+    var destinationY = thisPiece.y;
+    path.forEach(function(direction, directionIndex) {
+      destinationX += Direction.getdx(direction);
+      destinationY += Direction.getdy(direction);
+    });        
+
+    var kingEntity = false;
+    entities.forEach(function(entity, enitityIndex) {
+        if (thisPiece.side == entity.side && entity.clazz == 'king')
+            kingEntity = entity;
+    });
+
+    if (!kingEntity)
+        return false;
+
+    var isValid = true;
+    entities.forEach(function(entity, enitityIndex) {
+        
+        
+        if ((entity.side != thisPiece.side) && 
+            // check if current piece takes oponent entity
+            ((entity.x != destinationX) || (entity.y != destinationY)) &&
+            // try to find oponent entity that attacks current player king
+            // check if new destination of current piece breaks attack line
+            entity.isAttacking(entities, kingEntity.x, kingEntity.y, destinationX, destinationY))
+            isValid = false;
+    });
+
+    return isValid;
+}
+
+/**
+ * Check if entity attacks path
+ */
+Entity.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+    return false;
 }
 
 /**

@@ -18,9 +18,26 @@ function Pawn(x, y, width, height, side) {
 utils.inherits(Pawn, entity.Entity);
 
 /**
+ * Check if entity attacks tiles
+ */
+Pawn.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+	var pawnPiece = this;
+	var direction = (pawnPiece.side == 1) ? Direction.UP : Direction.DOWN;
+	var modY = Direction.getdy(direction);
+	if ((tileX == (pawnPiece.x + 1) || (tileX == (pawnPiece.x - 1))) && (tileY == pawnPiece))
+		return true;
+
+	return false;
+}
+
+/**
  * Check entity move
  */
-Pawn.prototype.checkMove = function (entities, path) {
+Pawn.prototype.checkMove = function (entities, path, entitiesChanged) {
+	var isValid = Pawn._super.checkMove.call(this, entities, path);
+	if (!isValid)
+		return false;
+
 	var pawnPiece = this;
 
 	// pawn can't move more than two fields
@@ -100,7 +117,9 @@ Pawn.prototype.checkMove = function (entities, path) {
 			});
 
 			if (!isValid)
-				return false;			
+				return false;
+
+			// TODO: if reached last line, promote pawn to knight, bishop, rook or queen
 		}
 		else {
 			// take

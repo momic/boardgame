@@ -15,9 +15,34 @@ function Knight(x, y, width, height, side) {
 utils.inherits(Knight, entity.Entity);
 
 /**
+ * Check if entity attacks tiles
+ */
+Knight.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+	var knightPiece = this;
+
+	var modificators = [-2 , 2];
+	var attacks = false;
+	modificators.forEach(function(mod) {
+		var modX = knightPiece.x + mod;
+		var modY = knightPiece.y + mod;
+
+		if (((tileX == modX) && (tileY == (knightPiece.y + 1) || tileY == (knightPiece.y - 1))) || 
+			((tileY == modY) && (tileX == (knightPiece.x + 1) || tileX == (knightPiece.x - 1))))
+			attacks = true;
+
+	})
+
+	return attacks;
+}
+
+/**
  * Check entity move
  */
 Knight.prototype.checkMove = function (entities, path) {
+	var isValid = Knight._super.checkMove.call(this, entities, path);
+	if (!isValid)
+		return false;
+
 	// knight always moves four fields
 	if (path.length != 2)
 		return false;

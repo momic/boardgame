@@ -18,6 +18,10 @@ utils.inherits(Rook, entity.Entity);
  * Check entity move
  */
 Rook.prototype.checkMove = function (entities, path) {
+	var isValid = Rook._super.checkMove.call(this, entities, path);
+	if (!isValid)
+		return false;
+
 	// rook can't move more than seven fields
 	if (path.length > 7)
 		return false;

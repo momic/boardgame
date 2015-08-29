@@ -30,6 +30,7 @@ GameScreen.prototype.initCanvasElement = function()
 	this.context = this.canvas.getContext('2d');
 
 	this.canvas.addEventListener("mousedown", this.onMouseDown);
+	this.canvas.addEventListener("touchstart", this.onMouseDown);
 	this.canvas.addEventListener("mousemove", this.onMouseMove);
 }
 
@@ -60,6 +61,9 @@ GameScreen.prototype.onMouseMove = function(evt)
  */
 GameScreen.prototype.onMouseDown = function(evt)
 {
+	evt.stopPropagation();
+	evt.preventDefault();
+
 	var mousePos = gameScreen.getRelativeMousePos(evt);
 
 	var candidateControls = new Array();
@@ -201,6 +205,16 @@ GameScreen.prototype.setCanvasSize = function() {
 	this.canvas.setAttribute("height", boardGameModule.Config.HEIGHT);
 }
 
+/**
+ * Enter full screen
+ */
+GameScreen.prototype.enterFullScreen = function() {
+    if(this.canvas.webkitRequestFullScreen)
+    	this.canvas.webkitRequestFullScreen();
+    else
+    	this.canvas.mozRequestFullScreen();
+}
+ 
 /**
  * Draw game screen
  */
