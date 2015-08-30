@@ -93,17 +93,16 @@ King.prototype.checkMove = function (entities, path, entitiesChanged) {
 		var isValid = true;
 		var boardX = kingPiece.x;
 		var boardY = kingPiece.y;
-		var destinationX = kingPiece.x + Direction.getdx(path[0]) * 2;
 		path.forEach(function(direction, directionIndex) {
 			boardX += Direction.getdx(direction);
 			boardY += Direction.getdy(direction);
 			entities.forEach(function(entity, index) {
 				// check for piece blocking multi step move
-				if ((entity.x == boardX) && (entity.y == boardY))
+				if ((entity.x == boardX) && (entity.y == boardY) && (entity.side == kingPiece.side))
 					isValid = false;
 				// check that field is not under attack
 				if ((entity.side != kingPiece.side) && 
-					(entity.isAttacking(entities, boardX, boardY, destinationX, boardY))) {
+					(entity.isAttacking(entities, boardX, boardY, boardX, boardY))) {
 					isValid = false;
 				}
 			});
