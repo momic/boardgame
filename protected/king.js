@@ -51,7 +51,7 @@ King.prototype.checkMove = function (entities, path, entitiesChanged) {
 
 		entities.forEach(function(entity, index) {
 			if ((entity.side != kingPiece.side) && 
-				(entity.isAttacking(entities, kingPiece.x, kingPiece.y, destinationX, kingPiece.y))) {
+				(entity.isAttacking(entities, kingPiece.x, kingPiece.y, kingPiece, destinationX, kingPiece.y))) {
 				isValid = false;
 			}
 		});
@@ -75,7 +75,7 @@ King.prototype.checkMove = function (entities, path, entitiesChanged) {
 			boardX += Direction.getdx(direction);
 			entities.forEach(function(entity, index) {
 				if ((entity.side != kingPiece.side) && 
-					(entity.isAttacking(entities, boardX, kingPiece.y, destinationX, kingPiece.y))) {
+					(entity.isAttacking(entities, boardX, kingPiece.y, kingPiece, destinationX, kingPiece.y))) {
 					isValid = false;
 				}
 			});
@@ -102,7 +102,7 @@ King.prototype.checkMove = function (entities, path, entitiesChanged) {
 					isValid = false;
 				// check that field is not under attack
 				if ((entity.side != kingPiece.side) && 
-					(entity.isAttacking(entities, boardX, boardY, boardX, boardY))) {
+					(entity.isAttacking(entities, boardX, boardY, kingPiece, boardX, boardY))) {
 					isValid = false;
 				}
 			});

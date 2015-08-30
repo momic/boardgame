@@ -16,7 +16,7 @@ utils.inherits(Queen, entity.Entity);
 /**
  * Check if entity attacks tiles
  */
-Queen.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+Queen.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var diffX = Math.abs(this.x - tileX);
 	var diffY = Math.abs(this.y - tileY);
 
@@ -52,8 +52,11 @@ Queen.prototype.isAttacking = function (entities, tileX, tileY, destinationX, de
 		return false;
 	
 	entities.forEach(function(entity, entityIndex) {
+		var x = (entity.isEqual(pieceToMove)) ? destinationX : entity.x;
+		var y = (entity.isEqual(pieceToMove)) ? destinationY : entity.y;
+
 		tilesToCheck.forEach(function (tile, tileIndex) {
-			if ((tile[0] == entity.x) && (tile[1] == entity.y))
+			if ((tile[0] == x) && (tile[1] == y))
 				attacks = false;			
 		});
 	});

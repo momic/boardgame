@@ -17,7 +17,7 @@ utils.inherits(Knight, entity.Entity);
 /**
  * Check if entity attacks tiles
  */
-Knight.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+Knight.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var knightPiece = this;
 
 	var modificators = [-2 , 2];

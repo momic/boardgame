@@ -20,7 +20,7 @@ utils.inherits(Pawn, entity.Entity);
 /**
  * Check if entity attacks tiles
  */
-Pawn.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+Pawn.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var pawnPiece = this;
 	var direction = (pawnPiece.side == 1) ? Direction.UP : Direction.DOWN;
 	var modY = Direction.getdy(direction);

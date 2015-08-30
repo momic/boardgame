@@ -16,7 +16,7 @@ utils.inherits(Bishop, entity.Entity);
 /**
  * Check if entity attacks tiles
  */
-Bishop.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+Bishop.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var diffX = Math.abs(this.x - tileX);
 	var diffY = Math.abs(this.y - tileY);
 
@@ -45,7 +45,10 @@ Bishop.prototype.isAttacking = function (entities, tileX, tileY, destinationX, d
 		return false;
 	
 	entities.forEach(function(entity, entityIndex) {
-		if (tilesToCheck[entity.x] == entity.y)
+		var x = (entity.isEqual(pieceToMove)) ? destinationX : entity.x;
+		var y = (entity.isEqual(pieceToMove)) ? destinationY : entity.y;
+
+		if (tilesToCheck[x] == y)
 			attacks = false;
 	});
 
