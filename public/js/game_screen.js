@@ -28,9 +28,9 @@ GameScreen.prototype.initCanvasElement = function()
 	this.setCanvasSize();
 
 	this.context = this.canvas.getContext('2d');
-
-	this.canvas.addEventListener("mousedown", this.onMouseDown);
+	
 	this.canvas.addEventListener("touchstart", this.onMouseDown);
+	this.canvas.addEventListener("mousedown", this.onMouseDown);
 	this.canvas.addEventListener("mousemove", this.onMouseMove);
 }
 
@@ -62,7 +62,7 @@ GameScreen.prototype.onMouseMove = function(evt)
 GameScreen.prototype.onMouseDown = function(evt)
 {
 	evt.stopPropagation();
-	evt.preventDefault();
+	// evt.preventDefault();
 
 	var mousePos = gameScreen.getRelativeMousePos(evt);
 
