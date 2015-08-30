@@ -48,10 +48,19 @@ Tile.prototype.toggleSelected = function() {
     	this.setDrawingContext();
 }
 
-Tile.prototype.setFlippedPosition = function(gameboard) {
+Tile.prototype.getFlippedTile = function(gameboard) {
+	// copy object (only properties)
+	var flippedTile = JSON.parse(JSON.stringify(this));
+
+	// calc flipped position
     flippedY = gameboard.boardHeight * (this.height + this.gap) - this.height - this.y + this.gap;
     flippedX = gameboard.boardWidth * (this.width  + this.gap) - this.width - this.x + this.gap;
-    this.setPosition(flippedX, flippedY);	
+    
+    // set flipped position
+    flippedTile.x = flippedX;
+    flippedTile.y = flippedY;
+
+    return flippedTile;
 }
 
 Tile.prototype.getFlippedPath = function(entity) {

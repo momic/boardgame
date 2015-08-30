@@ -123,20 +123,18 @@ GameScreen.prototype.onMouseDown = function(evt)
 				});
 
 				if (!tileClicked && tileToMove !== false) {
-					// TODO: clone tileToMove and mousePos so we don't need to flipp coordinates twice
+					// clone tileToMove and mousePos so we don't need to flipp coordinates twice
 					if (entity.flipped) {
-						tileToMove.setFlippedPosition(entity);
+						var flippedTileToMove = tileToMove.getFlippedTile(entity);
 
-						mousePos.x = entity.width - mousePos.x;
-						mousePos.y = entity.height - mousePos.y;
-					}					
-					socket.emit('move', {"mousePos": mousePos, "tileToMove": tileToMove});
-					if (entity.flipped) {
-						tileToMove.setFlippedPosition(entity);
+						flippedMousePosX = entity.width - mousePos.x;
+						flippedMousePosY = entity.height - mousePos.y;
+						flippedMousePos = {"x": flippedMousePosX, "y": flippedMousePosY};
 
-						mousePos.x = entity.width - mousePos.x;
-						mousePos.y = entity.height - mousePos.y;
-					}									
+						socket.emit('move', {"mousePos": flippedMousePos, "tileToMove": flippedTileToMove});
+					}
+					else
+						socket.emit('move', {"mousePos": mousePos, "tileToMove": tileToMove});
 				}
 			}
 		});
