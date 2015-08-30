@@ -14,6 +14,54 @@ function Queen(x, y, width, height, side) {
 utils.inherits(Queen, entity.Entity);
 
 /**
+ * Check if entity attacks tiles
+ */
+Queen.prototype.isAttacking = function (entities, tileX, tileY, destinationX, destinationY) {
+	var diffX = Math.abs(this.x - tileX);
+	var diffY = Math.abs(this.y - tileY);
+
+	var minX = Math.min(this.x, tileX);
+	var minY = Math.min(this.y, tileY);	
+
+	if (diffX == 0 && diffY == 0)
+		return false;
+	else if (diffX > 0 && diffY > 0 && (diffX != diffY)) // only diagonal
+		return false;
+	else {} // horizontal and vertical
+
+	var i = this.x;
+	var j = this.y;
+	var incrX = (diffX == 0) ? 0 : ((minX == this.x) ? 1 : -1);
+	var incrY = (diffY == 0) ? 0 : ((minY == this.y) ? 1 : -1);	
+	var condition = (diffX == 0) ? Math.abs(j - tileY) : Math.abs(i - tileX);
+
+	var tilesToCheck = [];
+	var attacks = true;
+	while (condition > 1)	{
+		i += incrX;
+		j += incrY;
+		
+		tilesToCheck.push([i, j]);
+		if ((destinationX == i) && (destinationY == j))
+			attacks = false;
+
+		condition = (diffX == 0) ? Math.abs(j - tileY) : Math.abs(i - tileX);
+	}
+
+	if (!attacks)
+		return false;
+	
+	entities.forEach(function(entity, entityIndex) {
+		tilesToCheck.forEach(function (tile, tileIndex) {
+			if ((tile[0] == entity.x) && (tile[1] == entity.y))
+				attacks = false;			
+		});
+	});
+
+    return attacks;
+}
+
+/**
  * Check entity move
  */
 Queen.prototype.checkMove = function (entities, path) {
