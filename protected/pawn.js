@@ -24,7 +24,7 @@ Pawn.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, dest
 	var pawnPiece = this;
 	var direction = (pawnPiece.side == 1) ? Direction.UP : Direction.DOWN;
 	var modY = Direction.getdy(direction);
-	if ((tileX == (pawnPiece.x + 1) || (tileX == (pawnPiece.x - 1))) && (tileY == pawnPiece))
+	if ((tileX == (pawnPiece.x + 1) || (tileX == (pawnPiece.x - 1))) && (tileY == (pawnPiece.y + modY)))
 		return true;
 
 	return false;
@@ -45,20 +45,18 @@ Pawn.prototype.checkMove = function (entities, path, entitiesChanged) {
 		return false;
 
 	// valid directions
-	var isValid = true;
+	var isValid = false;
 	path.forEach(function(direction, index) {
-		if (((Direction.getdy(direction) < 0) 
-			&& (direction != Direction.UP) 
-			&& (direction != Direction.UPRIGHT) 
-			&& (direction != Direction.UPLEFT)) 
-		|| ((Direction.getdy(direction) > 0) 
-			&& (direction != Direction.DOWN)
-			&& (direction != Direction.DOWNRIGHT)
-			&& (direction != Direction.DOWNLEFT))
-		||	(Direction.getdy(direction) == 0))
+		if (((pawnPiece.side == 1)
+		 	&& (Direction.getdy(direction) < 0)
+			&& ((direction == Direction.UP) || (direction == Direction.UPRIGHT) || (direction == Direction.UPLEFT)))
+		|| ((pawnPiece.side == 0)
+			&& (Direction.getdy(direction) > 0) 
+			&& ((direction == Direction.DOWN) || (direction == Direction.DOWNRIGHT) || (direction == Direction.DOWNLEFT))))
 
-			isValid = false
+			isValid = true;
 	});	
+
 
 	if (!isValid)
 		return false;
@@ -118,8 +116,6 @@ Pawn.prototype.checkMove = function (entities, path, entitiesChanged) {
 
 			if (!isValid)
 				return false;
-
-			// TODO: if reached last line, promote pawn to knight, bishop, rook or queen
 		}
 		else {
 			// take
@@ -140,6 +136,11 @@ Pawn.prototype.checkMove = function (entities, path, entitiesChanged) {
 			if (!isValid)
 				return false;			
 		}
+
+		// if reached last line, promote pawn to knight, bishop, rook or queen
+		var destinationY = pawnPiece.y + Direction.getdy(direction);
+		if ((destinationY == 0 || destinationY == boardGameModule.Config.ROWS - 1) && (!pawnPiece.promote))
+			pawnPiece.set("promote", true);		
 	}
 
     return true;

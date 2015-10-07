@@ -148,6 +148,20 @@ GameScreen.prototype.onMouseDown = function(evt)
 	}
 }
 
+socket.on('promote', function(msg) {
+    var $promoteModal = $('#promoteModal');
+    $promoteModal.find('form').submit(function(e) {
+      e.preventDefault();
+      $promoteModal.modal('hide');
+    });
+
+    $promoteModal.modal('toggle')
+        .on('hidden.bs.modal', function (e) {
+            msg.promoteTo = $('form input[type=radio]:checked').val();
+            socket.emit('move', msg);
+        });
+});
+
 socket.on('turn complete', function(msg) {
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
 
@@ -157,13 +171,15 @@ socket.on('turn complete', function(msg) {
     	var destinationX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
 
 	  	gameboard.tiles.forEach(function(tile, tileIndex) {
-
-	    	if ((tile.x == destinationX) && (tile.y == destinationY)
-	    		&& (tile.side === entity.side) && (tile.side != gameboard.sideToMove)) {
+	    	if ((tile.x == destinationX) && (tile.y == destinationY) && (tile.side === entity.side)) {
 	      		delete gameboard.tiles[tileIndex];
 	    	}
 	  	});		
 	});
+
+	// add new pieces
+	if (msg.entitiesAdded)
+		gameboard.createTiles(msg.entitiesAdded);
 
 	// move piece
 	msg.entitiesChanged.forEach(function(entity, entityIndex) {

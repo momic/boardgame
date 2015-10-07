@@ -55,7 +55,6 @@ $(document).ready(function() {
                 gameScreen.player.set("nick", nickName);
             });        
     }
-
 });
 
 /**

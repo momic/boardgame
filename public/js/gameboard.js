@@ -72,7 +72,6 @@ Gameboard.prototype.setContextFill = function() {
  * Create tile entities
  */
 Gameboard.prototype.createTiles = function (entities) {
-    this.tiles = [];
     var gameboard = this;
 
 	entities.forEach(function(entity, index) {

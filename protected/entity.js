@@ -29,6 +29,9 @@ function Entity(x, y, width, height, side, clazz)
 
     // path
     this.path = [];
+
+    // promote
+    this.set("promote", false);
 }
 
 /**
@@ -74,13 +77,11 @@ Entity.prototype.checkMove = function (entities, path, entitiesChanged) {
 
     var isValid = true;
     entities.forEach(function(entity, enitityIndex) {
-        // TODO: check if current piece after move opens attack line to king
-        
         if ((entity.side != thisPiece.side) && 
             // check if current piece takes oponent entity
             ((entity.x != destinationX) || (entity.y != destinationY)) &&
             // try to find oponent entity that attacks current player king
-            // check if new destination of current piece breaks attack line
+            // check if new destination of current piece breaks (or opens) attack line to king
             entity.isAttacking(entities, kingEntity.x, kingEntity.y, thisPiece, destinationX, destinationY))
             isValid = false;
     });

@@ -53,16 +53,16 @@
 		</div>
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 center-text footer-fill">
-				<h4>Copyright by Optimal Solutions</h4>
+				<h4>Chrome Chess</h4>
 			</div>			
 		</div>
-		<!-- Small modal -->
+		<!-- Player name modal -->
 		<div id="playerNameModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
 		  <div class="modal-dialog modal-sm">
 		    <div class="modal-content">
 				<div class="modal-header">
 				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				    <h4 class="modal-title" id="exampleModalLabel">Enter your name</h4>
+				    <h4 class="modal-title">Enter your name</h4>
 				</div>
 				<div class="modal-body">
 					<form>
@@ -78,5 +78,29 @@
 		    </div>
 		  </div>
 		</div>		
+		<!-- Promote modal -->
+		<div id="promoteModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+		  <div class="modal-dialog modal-sm">
+		    <div class="modal-content">
+				<div class="modal-header">
+				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				    <h4 class="modal-title">Promote pawn to</h4>
+				</div>
+				<div class="modal-body">
+					<form>
+				    	<div class="form-group">
+				    		<label><input type="radio" name="optPromote" value="queen" checked/> Queen</label><br/>
+				    		<label><input type="radio" name="optPromote" value="rook"/> Rook</label><br/>
+				    		<label><input type="radio" name="optPromote" value="knight"/> Knight</label><br/>
+				    		<label><input type="radio" name="optPromote" value="bishop"/> Bishop</label>
+				        </div>
+				    </form>
+				</div>
+		        <div class="modal-footer">
+		        	<button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
+		      	</div>
+		    </div>
+		  </div>
+		</div>				
 	</body>
 </html>
