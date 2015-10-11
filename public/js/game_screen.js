@@ -3,11 +3,21 @@
  */
 function GameScreen()
 {
+	// Chrome extension
+	this.isChromeExtension = ((typeof window.chrome != 'undefined') && 
+							  (typeof chrome.extension != 'undefined'));
+
 	// Root element
 	this.initDocumentRoot();
 
 	// Socket
-	this.initSocketIO();
+	if (this.isChromeExtension)
+		this.initExtensionListener();
+	else
+		this.initSocketIO();
+
+	// Dropup
+	this.initDropupElements();
 
 	// Sprites
 	this.spriteRepository = new SpriteRepository();
@@ -70,6 +80,17 @@ GameScreen.prototype.loadNickName = function()
             });        
     }
 }
+
+/**
+ * Init dropup elements
+ */
+GameScreen.prototype.initDropupElements = function()
+{
+	$("#new-game-button").mousedown(function() {
+		gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
+	});
+}
+
 /**
  * Canvas initialization
  */
@@ -193,7 +214,7 @@ GameScreen.prototype.onMouseDown = function(evt)
 						moveProperties.tileToMove = tileToMove;
 					}
 
-					gameScreen.socket.emit('move', moveProperties);
+					gameScreen.emit('move', moveProperties);
 				}
 			}
 		});
@@ -201,31 +222,42 @@ GameScreen.prototype.onMouseDown = function(evt)
 }
 
 /**
- * SocketIO initialization
+ * Promote figure
  */
-GameScreen.prototype.initSocketIO = function()
+GameScreen.prototype.emit = function(action, data)
 {
-	this.socket = io.connect(boardGameModule.Config.HOST);
-	var $documentRoot = this.documentRoot;
+    if (gameScreen.isChromeExtension)
+    	chrome.runtime.sendMessage({action:action, data:data},function(response){});
+    else
+		gameScreen.socket.emit(action, data);
+}
+/**
+ * Promote figure
+ */
+GameScreen.prototype.promoteFigure = function($documentRoot, msg)
+{
+    var $promoteModal = $documentRoot.find('#promoteModal');
+    $promoteModal.find('form').submit(function(e) {
+      e.preventDefault();
+      $promoteModal.modal('hide');
+    });
 
-	this.socket.on('promote', function(msg) {
-	    var $promoteModal = $documentRoot.find('#promoteModal');
-	    $promoteModal.find('form').submit(function(e) {
-	      e.preventDefault();
-	      $promoteModal.modal('hide');
-	    });
+    $promoteModal.modal('toggle')
+        .on('hidden.bs.modal', function (e) {
+            msg.promoteTo = $promoteModal.find('form input[type=radio]:checked').val();
+            gameScreen.emit('move', msg);
+        });
+}
 
-	    $promoteModal.modal('toggle')
-	        .on('hidden.bs.modal', function (e) {
-	            msg.promoteTo = $promoteModal.find('form input[type=radio]:checked').val();
-	            gameScreen.socket.emit('move', msg);
-	        });
-	});
+/**
+ * End Turn
+ */
+GameScreen.prototype.endTurn = function(msg)
+{
+	var gameboard = gameScreen.activeScreen.entities['gameboard'];
 
-	this.socket.on('turn complete', function(msg) {
-		var gameboard = gameScreen.activeScreen.entities['gameboard'];
-
-		// take
+	// take
+	if (msg.entitiesDeleted)
 		msg.entitiesDeleted.forEach(function(entity, entityIndex) {
 	    	var destinationY = ((gameboard.flipped) ? (gameboard.boardHeight - 1 - entity.y) : entity.y) * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
 	    	var destinationX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
@@ -237,11 +269,12 @@ GameScreen.prototype.initSocketIO = function()
 		  	});		
 		});
 
-		// add new pieces
-		if (msg.entitiesAdded)
-			gameboard.createTiles(msg.entitiesAdded);
+	// add new pieces
+	if (msg.entitiesAdded)
+		gameboard.createTiles(msg.entitiesAdded);
 
-		// move piece
+	// move piece
+	if (msg.entitiesChanged)
 		msg.entitiesChanged.forEach(function(entity, entityIndex) {
 	    	var entityY = ((gameboard.flipped) ? (gameboard.boardHeight - 1 - entity.y) : entity.y) * (gameboard.tileHeight + gameboard.tileGap) + gameboard.tileGap;
 	    	var entityX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
@@ -253,29 +286,87 @@ GameScreen.prototype.initSocketIO = function()
 			});
 		});
 
-		// switch sides after move
-		gameboard.set("sideToMove", (gameboard.sideToMove == 1) ? 0 : 1);
+	// switch sides after move
+	gameboard.set("sideToMove", (gameboard.sideToMove == 1) ? 0 : 1);	
+}
+
+/**
+ * Start game
+ */
+GameScreen.prototype.startGame = function($documentRoot, data)
+{
+	console.log("STARTING GAME...");
+	$documentRoot.find('#left-header-text').text('White: ' + data.whitePlayer.nick);
+	$documentRoot.find('#right-header-text').text('Black: ' + data.blackPlayer.nick);
+
+	var gameboard = gameScreen.activeScreen.entities['gameboard'];
+
+	// create gameboard tiles
+	gameboard.createTiles(data.entities);
+
+	gameboard.statusBox.setText("");
+	gameboard.set("active", true);	
+}
+
+/**
+ * Set player's side
+ */
+GameScreen.prototype.setSide = function(player)
+{
+	gameScreen.player.set("side", player.side);
+
+	var gameboard = gameScreen.activeScreen.entities['gameboard'];
+	gameboard.set("flipped", (player.side == 0));
+}
+
+/**
+ * Extension messaging initialization
+ */
+GameScreen.prototype.initExtensionListener = function()
+{
+	chrome.runtime.onMessage.addListener(
+	  function(request, sender, sendResponse) {
+	    console.log(sender.tab ?
+	                "from a content script:" + sender.tab.url :
+	                "from the extension");
+	    switch (request.action) {
+	    	case 'promote':
+	    		gameScreen.promoteFigure(gameScreen.documentRoot, request.data);
+	    		break;
+	    	case 'turn complete':
+	    		gameScreen.endTurn(request.data);
+	    		break;
+	    	case 'start_game':
+	    		gameScreen.startGame(gameScreen.documentRoot, request.data);
+	    		break;
+	    	case 'side':
+	    		gameScreen.setSide(request.data);
+	    		break;
+	    }
+	  });
+}
+
+/**
+ * SocketIO initialization
+ */
+GameScreen.prototype.initSocketIO = function()
+{
+	this.socket = io.connect(boardGameModule.Config.HOST);
+
+	this.socket.on('promote', function(msg) {
+		gameScreen.promoteFigure(gameScreen.documentRoot, msg);
+	});
+
+	this.socket.on('turn complete', function(msg) {
+		gameScreen.endTurn(msg);
 	});
 
 	this.socket.on('start_game', function(data) {
-		console.log("STARTING GAME...");
-		$documentRoot.find('#left-header-text').text('White: ' + data.whitePlayer.nick);
-		$documentRoot.find('#right-header-text').text('Black: ' + data.blackPlayer.nick);
-
-		var gameboard = gameScreen.activeScreen.entities['gameboard'];
-
-		// create gameboard tiles
-		gameboard.createTiles(data.entities);
-
-		gameboard.statusBox.setText("");
-		gameboard.set("active", true);
+		gameScreen.startGame(gameScreen.documentRoot, data);
 	});
 
 	this.socket.on('side', function(player) {
-		gameScreen.player.set("side", player.side);
-
-		var gameboard = gameScreen.activeScreen.entities['gameboard'];
-		gameboard.set("flipped", (player.side == 0));
+		gameScreen.setSide(player)
 	});
 }
 

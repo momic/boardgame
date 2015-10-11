@@ -17,10 +17,6 @@ ScreenRepository.prototype.mainMenuScreen = function()
 	menuButtons.push(startGameButton);
 	var fullScreenButton = new Button("Full Screen", 0, 0, this.fullScreenButtonClick, "#777");
 	menuButtons.push(fullScreenButton);
-	// var optionsButton = new Button("Options", 0, 0, this.optionsButtonClick, "#999");
-	// menuButtons.push(optionsButton);
-	// var helpButton = new Button("Help", 0, 0, this.helpButtonClick, "#777");
-	// menuButtons.push(helpButton);
 
 	// center menu
 	var menuX = Math.round((boardGameModule.Config.WIDTH - startGameButton.width) / 2);
@@ -47,19 +43,6 @@ ScreenRepository.prototype.fullScreenButtonClick = function() {
 }
 
 /**
- * onClick method for options button click
- */
-ScreenRepository.prototype.optionsButtonClick = function() {
-}
-
-/**
- * onClick method for help button click
- */
-ScreenRepository.prototype.helpButtonClick = function() {
-}
-
-
-/**
  * Gameboard screen
  */
 ScreenRepository.prototype.gameBoardScreen = function()
@@ -74,7 +57,7 @@ ScreenRepository.prototype.gameBoardScreen = function()
 	var gameBoardScreen = new Screen("gameBoardScreen");
 	gameBoardScreen.addEntity("gameboard", gameboard);
 
-	gameScreen.socket.emit("ready_for_game", gameScreen.player);
+	gameScreen.emit('ready_for_game', gameScreen.player);
 	
 	return gameBoardScreen;
 }

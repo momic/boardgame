@@ -46,12 +46,24 @@
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 center-text">
 				<canvas id="canvas" tabindex="0"></canvas>
-			</div>			
+			</div>
 		</div>
 		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 center-text footer-fill">
+			<div class="dropup pull-left col-xs-3 col-sm-3 col-md-3 footer-fill">
+			  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			    <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+			    <li><a id="new-game-button" href="#">New game</a></li>
+			  </ul>
+			  <h4 class="pull-left">&nbsp;</h4>
+			</div>	
+			<div class="col-xs-6 col-sm-6 col-md-6 center-text footer-fill">
 				<h4>Chrome Chess</h4>
-			</div>			
+			</div>
+			<div class="col-xs-3 col-sm-3 col-md-3 right-text footer-fill">
+				<h4>&nbsp;</h4>
+			</div>
 		</div>
 		<!-- Player name modal -->
 		<div id="playerNameModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
