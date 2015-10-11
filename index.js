@@ -23,7 +23,7 @@ var onlineUsers = [];
 var openGameRooms = [];
 var activeGameRooms = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[]}
 
-app.use(minify({cache: __dirname + '/cache'}));
+// app.use(minify({cache: __dirname + '/cache'}));
 app.use(express.static('public'));
 
 app.get('/', function(req, res){

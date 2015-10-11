@@ -74,7 +74,7 @@ ScreenRepository.prototype.gameBoardScreen = function()
 	var gameBoardScreen = new Screen("gameBoardScreen");
 	gameBoardScreen.addEntity("gameboard", gameboard);
 
-	socket.emit("ready_for_game", gameScreen.player);
+	gameScreen.socket.emit("ready_for_game", gameScreen.player);
 	
 	return gameBoardScreen;
 }
