@@ -5,6 +5,7 @@
 function Gameboard(x, y) {
 	Gameboard._super.constructor.call(this, x, y);
 
+	this.set("constructorName", "Gameboard");
 	this.initialize();
 }
 
@@ -45,6 +46,10 @@ Gameboard.prototype.initialize = function() {
 
 	// side to move
 	this.sideToMove = 1;
+
+	// player nicks
+	this.whitePlayerNick = "";
+	this.blackPlayerNick = "";
 }
 
 /**

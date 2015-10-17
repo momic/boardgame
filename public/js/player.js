@@ -3,6 +3,7 @@
  * Player class
  */
 function Player() {
+	this.set("constructorName", "Player");
 	this.initialize();
 }
 

@@ -8,7 +8,7 @@ var gameScreen = null;
  * Main loop runned at fixed fps
  */
 function drawCanvas() 
-{       
+{
     // draw game screen
     gameScreen.draw();
 }
@@ -24,4 +24,8 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // draw canvas every 30ms => 33fps
     setInterval(drawCanvas, 30);
+
+    // check for arrived messages
+    if (gameScreen.isChromeExtension)
+        gameScreen.executeMessageQueue();
 });

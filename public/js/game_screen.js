@@ -28,14 +28,38 @@ function GameScreen()
 	// Screens
 	this.screenRepository = new ScreenRepository();
 
-	// Active screen
-	this.activeScreen = this.screenRepository.mainMenuScreen();
-
 	// Player
-	this.player = new playerModule.Player();
+	if (this.isChromeExtension)
+		// load from background (extension only)
+		this.player = this.loadPlayer();
 
-	// Nick name
-	this.loadNickName();
+	if (!this.player) {
+		// regular player initialize
+		this.player = new playerModule.Player();
+		this.loadNickName();
+
+		if (this.isChromeExtension)
+			// store to background (extension only)
+			this.storePlayer();
+	}
+
+	// Active screen
+	if (this.isChromeExtension) {
+		this.activeScreen = this.loadActiveScreen();
+
+		// Reload nicks
+		var gameboard = this.activeScreen.entities.gameboard;
+		if (gameboard && gameboard.active) {
+			this.documentRoot.find('#left-header-text').text('White: ' + gameboard.whitePlayerNick);
+			this.documentRoot.find('#right-header-text').text('Black: ' + gameboard.blackPlayerNick);
+		}
+		else
+			this.documentRoot.find('#left-header-text').text('Hello ' + this.player.nick);
+
+		chrome.browserAction.setIcon({path: "images/icon_32.png"});
+	}
+	else
+		this.setActiveScreen(this.screenRepository.mainMenuScreen());
 }
 
 /**
@@ -53,7 +77,7 @@ GameScreen.prototype.loadNickName = function()
 {
     var nickName = localStorage.getItem('nickName');
     var $documentRoot = this.documentRoot;
-    if (localStorage.getItem('nickName')) {
+    if (nickName) {
         $documentRoot.find('#left-header-text').text('Hello ' + nickName);
         this.player.set("nick", nickName);
     } else {
@@ -88,6 +112,9 @@ GameScreen.prototype.initDropupElements = function()
 {
 	$("#new-game-button").mousedown(function() {
 		gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
+	});
+	$("#full-screen-button").mousedown(function() {
+		gameScreen.enterFullScreen();
 	});
 }
 
@@ -142,7 +169,7 @@ GameScreen.prototype.onMouseDown = function(evt)
 	var candidateControls = new Array();
 	var candidateEntities = new Array();
 
-	for (entityID in gameScreen.activeScreen.entities) {
+	Object.getOwnPropertyNames(gameScreen.activeScreen.entities).forEach(function(entityID) {
 		var entity = gameScreen.activeScreen.entities[entityID];
 		if (entity.contains(mousePos.x, mousePos.y)) {
 			if (entity instanceof Gameboard) {
@@ -151,7 +178,7 @@ GameScreen.prototype.onMouseDown = function(evt)
 				candidateControls.push(entityID);
 			}
 		}
-	}
+	});
 
 	if (candidateControls.length) {
 		candidateControls.forEach(function(entityID) {
@@ -264,9 +291,9 @@ GameScreen.prototype.endTurn = function(msg)
 
 		  	gameboard.tiles.forEach(function(tile, tileIndex) {
 		    	if ((tile.x == destinationX) && (tile.y == destinationY) && (tile.side === entity.side)) {
-		      		delete gameboard.tiles[tileIndex];
+		    		gameboard.tiles.splice(tileIndex, 1);
 		    	}
-		  	});		
+		  	});
 		});
 
 	// add new pieces
@@ -300,12 +327,14 @@ GameScreen.prototype.startGame = function($documentRoot, data)
 	$documentRoot.find('#right-header-text').text('Black: ' + data.blackPlayer.nick);
 
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
+	gameboard.whitePlayerNick = data.whitePlayer.nick;
+	gameboard.blackPlayerNick = data.blackPlayer.nick;
 
 	// create gameboard tiles
 	gameboard.createTiles(data.entities);
 
 	gameboard.statusBox.setText("");
-	gameboard.set("active", true);	
+	gameboard.set("active", true);
 }
 
 /**
@@ -313,10 +342,34 @@ GameScreen.prototype.startGame = function($documentRoot, data)
  */
 GameScreen.prototype.setSide = function(player)
 {
-	gameScreen.player.set("side", player.side);
+	this.player.set("side", player.side);
 
-	var gameboard = gameScreen.activeScreen.entities['gameboard'];
+	var gameboard = this.activeScreen.entities['gameboard'];
 	gameboard.set("flipped", (player.side == 0));
+}
+
+/**
+ * Socket extension listener
+ */
+GameScreen.prototype.socketExtensionListener = function(request, sender, sendResponse)
+{
+	switch (request.action) {
+		case 'promote':
+			gameScreen.promoteFigure(gameScreen.documentRoot, request.data);
+			break;
+		case 'turn complete':
+			gameScreen.endTurn(request.data);
+			break;
+		case 'start_game':
+			gameScreen.startGame(gameScreen.documentRoot, request.data);
+			break;
+		case 'side':
+			gameScreen.setSide(request.data);
+			gameScreen.storePlayer();
+			break;
+	}
+
+	gameScreen.storeActiveScreen(gameScreen.activeScreen);
 }
 
 /**
@@ -324,26 +377,7 @@ GameScreen.prototype.setSide = function(player)
  */
 GameScreen.prototype.initExtensionListener = function()
 {
-	chrome.runtime.onMessage.addListener(
-	  function(request, sender, sendResponse) {
-	    console.log(sender.tab ?
-	                "from a content script:" + sender.tab.url :
-	                "from the extension");
-	    switch (request.action) {
-	    	case 'promote':
-	    		gameScreen.promoteFigure(gameScreen.documentRoot, request.data);
-	    		break;
-	    	case 'turn complete':
-	    		gameScreen.endTurn(request.data);
-	    		break;
-	    	case 'start_game':
-	    		gameScreen.startGame(gameScreen.documentRoot, request.data);
-	    		break;
-	    	case 'side':
-	    		gameScreen.setSide(request.data);
-	    		break;
-	    }
-	  });
+	chrome.runtime.onMessage.addListener(this.socketExtensionListener);
 }
 
 /**
@@ -429,10 +463,133 @@ GameScreen.prototype.activeScreenIs = function(entityID)
 }
 
 /**
+ * Recreate object from it's state
+ */
+GameScreen.prototype.objectFromState = function(objectState)
+{
+	var objectPrototype;
+	switch (objectState.constructorName) {
+		case 'Screen': 	  	 objectPrototype = Screen.prototype; break;
+		case 'Menu': 	  	 objectPrototype = Menu.prototype; break;
+		case 'Button': 	 	 objectPrototype = Button.prototype; break;
+		case 'Player': 	 	 objectPrototype = playerModule.Player.prototype; break;
+
+		case 'Gameboard': 	 objectPrototype = Gameboard.prototype; break;
+		case 'StatusBox': 	 objectPrototype = StatusBox.prototype; break;
+		case 'Tile': 	  	 objectPrototype = Tile.prototype; break;
+		case 'ActiveEntity': objectPrototype = ActiveEntity.prototype; break;
+		case 'Entity': 	  	 objectPrototype = Entity.prototype; break;
+		default: 		  	 objectPrototype = Object.prototype;
+	};
+
+	var freshObject = Object.create(objectPrototype);	
+	var gs = this;
+	var sr = this.spriteRepository;
+	for (var prop in objectState) {
+		if (objectState.hasOwnProperty(prop)) {
+			if (utils.isObject(objectState[prop])) {
+				freshObject[prop] = gs.objectFromState(objectState[prop]);
+				if (utils.isFunction(freshObject[prop].setDrawingContext))
+					freshObject[prop].setDrawingContext(sr);
+			}
+			else if (utils.isArray(objectState[prop])) {
+				freshObject[prop] = new Array();
+				objectState[prop].forEach(function(element, elementIndex) {
+					if (utils.isObject(element)) {
+						var elementObject = gs.objectFromState(element);
+						if (utils.isFunction(elementObject.setDrawingContext))
+							elementObject.setDrawingContext(sr);
+						freshObject[prop].push(elementObject);
+					}
+					else
+						freshObject[prop].push(element);
+				});
+			}
+			else
+				freshObject[prop] = objectState[prop];
+		}
+	}
+
+	return freshObject;
+}
+
+/**
+ * Load player
+ */
+GameScreen.prototype.loadPlayer = function(loadFromStorage)
+{
+	var player = false;
+	var objectState = (loadFromStorage)
+						? localStorage.getItem('player')
+						: chrome.extension.getBackgroundPage().backgroundProcess.player;
+	if (objectState) {
+		objectState = JSON.parse(objectState);
+		player = this.objectFromState(objectState);
+	}
+
+	return player;
+}
+
+
+/**
+ * Store active screen
+ */
+GameScreen.prototype.storePlayer = function(loadFromStorage)
+{
+	var objectState = JSON.stringify(this.player);
+
+	if (loadFromStorage)
+		localStorage.setItem('player', objectState)
+	else
+		chrome.extension.getBackgroundPage().backgroundProcess.player = objectState;
+
+}
+
+/**
+ * Load active screen
+ */
+GameScreen.prototype.loadActiveScreen = function(loadFromStorage)
+{
+	var activeScreen = {};
+	var objectState = (loadFromStorage)
+						? localStorage.getItem('activeScreen')
+						: chrome.extension.getBackgroundPage().backgroundProcess.activeScreen;
+	if (objectState) {
+		objectState = JSON.parse(objectState);
+		activeScreen = this.objectFromState(objectState);
+	}
+	else
+		activeScreen = this.screenRepository.mainMenuScreen();
+
+	return activeScreen;
+}
+/**
+ * Store active screen
+ */
+GameScreen.prototype.storeActiveScreen = function(activeScreen, loadFromStorage)
+{
+	var objectState = JSON.stringify(activeScreen, function replacer(key, value) {
+                              if (key == "canvas" || key == "drawingContext") {
+                                return;
+                              }
+                              return value;
+                            });
+
+	if (loadFromStorage)
+		localStorage.setItem('activeScreen', objectState)
+	else
+		chrome.extension.getBackgroundPage().backgroundProcess.activeScreen = objectState;
+
+}
+
+/**
  * Sets active screen
  */
 GameScreen.prototype.setActiveScreen = function(activeScreen)
 {
+	if (this.isChromeExtension)
+		this.storeActiveScreen(activeScreen);
+
 	this.activeScreen = activeScreen;
 	this.clearActiveScreen();
 }
@@ -444,3 +601,15 @@ GameScreen.prototype.clearActiveScreen = function()
 {
 	this.context.clearRect(0, 0, this.canvas.getAttribute("width"), this.canvas.getAttribute("height"));
 }
+
+/**
+ * Executed queued messages
+ */
+GameScreen.prototype.executeMessageQueue = function()
+{
+	var messageQueue = chrome.extension.getBackgroundPage().backgroundProcess.messageQueue;
+	while (messageQueue.length > 0) {
+		this.socketExtensionListener(messageQueue.shift());
+	}
+}
+

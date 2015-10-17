@@ -5,8 +5,9 @@
  */
 function Screen(screenID)
 {
+    this.constructorName = "Screen";
     this.screenID = screenID;
-    this.entities = [];
+    this.entities = {};
 }
 
 /**

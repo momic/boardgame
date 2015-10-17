@@ -15,8 +15,6 @@ ScreenRepository.prototype.mainMenuScreen = function()
 	menuButtons = [];
 	var startGameButton = new Button("Start Game", 0, 0, this.startGameButtonClick, "#777");
 	menuButtons.push(startGameButton);
-	var fullScreenButton = new Button("Full Screen", 0, 0, this.fullScreenButtonClick, "#777");
-	menuButtons.push(fullScreenButton);
 
 	// center menu
 	var menuX = Math.round((boardGameModule.Config.WIDTH - startGameButton.width) / 2);
@@ -33,13 +31,6 @@ ScreenRepository.prototype.mainMenuScreen = function()
  */
 ScreenRepository.prototype.startGameButtonClick = function() {
 	gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
-}
-
-/**
- * onClick method for full screen button click
- */
-ScreenRepository.prototype.fullScreenButtonClick = function() {
-	gameScreen.enterFullScreen();
 }
 
 /**

@@ -3,7 +3,8 @@
  */
 function StatusBox(text) {
     StatusBox._super.constructor.call(this);
-	 this.initialize();
+    this.set("constructorName", "StatusBox");
+	this.initialize();
     this.setText(text);
 
 }

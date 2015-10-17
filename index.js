@@ -23,7 +23,7 @@ var onlineUsers = [];
 var openGameRooms = [];
 var activeGameRooms = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[]}
 
-// app.use(minify({cache: __dirname + '/cache'}));
+app.use(minify({cache: __dirname + '/cache'}));
 app.use(express.static('public'));
 
 app.get('/', function(req, res){
@@ -248,11 +248,14 @@ io.on('connection', function(socket){
         // queen and king
         entities.push(new queen.Queen(3, j * 7, 1, 1, j));
         entities.push(new king.King(4, j * 7, 1, 1, j));
+      }      
 
+      // separate knight to be on top while moving over others
+      for(j=0; j<2; j++) {
         // knight
         entities.push(new knight.Knight(1, j * 7, 1, 1, j));
-        entities.push(new knight.Knight(6, j * 7, 1, 1, j));
-      }      
+        entities.push(new knight.Knight(6, j * 7, 1, 1, j));      
+      }
 
       // assign active room
       activeGameRooms[activePlayer.activeGameRoom] = {'entities': entities, 'entitiesAdded': [], 'entitiesChanged': [], 'entitiesDeleted': [], "whitePlayer": openGameRoom, "blackPlayer": activePlayer};

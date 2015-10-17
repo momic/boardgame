@@ -50,8 +50,11 @@ ActiveEntity.prototype.applyMovement = function () {
 
     // still on path?
     var walking = this.walkPath(this.speed);
-    if (!walking)
+    if (!walking) {
         this.stop();
+        if (gameScreen.isChromeExtension)
+            gameScreen.storeActiveScreen(gameScreen.activeScreen);
+    }
 }
 
 /**

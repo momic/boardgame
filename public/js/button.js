@@ -4,6 +4,7 @@
 function Button(text, x, y, onClick, color) {
     Button._super.constructor.call(this, x, y);
 
+    this.set("constructorName", "Button");
     this.set("text", text);
     this.set("fillStyle", color);
     this.set("width", 96);

@@ -3,8 +3,11 @@
  */
 function ExtensionBackground()
 {
+	// Message queue
+	this.messageQueue = [];
+
 	// Socket
-	this.initSocketIO();	
+	this.initSocketIO();
 }
 
 /**
@@ -15,19 +18,43 @@ ExtensionBackground.prototype.initSocketIO = function()
 	this.socket = io.connect(boardGameModule.Config.HOST);
 
 	this.socket.on('promote', function(msg) {
-		chrome.runtime.sendMessage({action:'promote', data:msg},function(response){});
+		var popupOpen = chrome.extension.getViews({ type: "popup" }).length;
+		if (popupOpen)
+			chrome.runtime.sendMessage({action:'promote', data:msg},function(response){});
+		else {
+			backgroundProcess.messageQueue.push({action:'promote', data:msg});
+			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+		}
 	});
 
 	this.socket.on('turn complete', function(msg) {
-		chrome.runtime.sendMessage({action:'turn complete', data:msg},function(response){});
+		var popupOpen = chrome.extension.getViews({ type: "popup" }).length;
+		if (popupOpen)
+			chrome.runtime.sendMessage({action:'turn complete', data:msg},function(response){});
+		else {
+			backgroundProcess.messageQueue.push({action:'turn complete', data:msg});
+			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+		}
 	});
 
 	this.socket.on('start_game', function(data) {
-		chrome.runtime.sendMessage({action:'start_game', data:data},function(response){});
+		var popupOpen = chrome.extension.getViews({ type: "popup" }).length;
+		if (popupOpen)
+			chrome.runtime.sendMessage({action:'start_game', data:data},function(response){});
+		else {
+			backgroundProcess.messageQueue.push({action:'start_game', data:data});
+			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+		}
 	});
 
 	this.socket.on('side', function(player) {
-		chrome.runtime.sendMessage({action:'side', data:player},function(response){});
+		var popupOpen = chrome.extension.getViews({ type: "popup" }).length;
+		if (popupOpen)
+			chrome.runtime.sendMessage({action:'side', data:player},function(response){});
+		else {
+			backgroundProcess.messageQueue.push({action:'side', data:player});
+			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+		}
 	});
 
 	chrome.runtime.onMessage.addListener(

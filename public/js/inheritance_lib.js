@@ -13,9 +13,9 @@ if (Object.create === undefined) {
 (function(exports){
 
 /**
- * Extend - copy onw propertyes from source to target
+ * Extend - copy own properties from source to target
  */
-function extend(target, source) {
+var extend = function (target, source) {
       Object.getOwnPropertyNames(source).forEach(function(propName) {
           Object.defineProperty(target, propName,
               Object.getOwnPropertyDescriptor(source, propName));
@@ -55,6 +55,26 @@ exports.protoChain = function () {
 exports.isUndefined = function (x, value) {
     return (typeof x !== 'undefined' ? x : value);
 }
+
+/**
+ * @param {string} type
+ * @returns {Function} A function that tests for type.
+ */
+exports.is = function(type) {
+    var string = '[object ' + type + ']';
+    return function(object) {
+        return Object.prototype.toString.call(object) === string;
+    };
+};
+
+exports.isArray    = exports.is('Array');
+exports.isString   = exports.is('String');
+exports.isBoolean  = exports.is('Boolean');
+exports.isNumber   = exports.is('Number');
+exports.isFunction = exports.is('Function');
+exports.isDate     = exports.is('Date');
+exports.isRegExp   = exports.is('RegExp');
+exports.isObject   = exports.is('Object');
 
 })((typeof exports === 'undefined') ? this['utils']={} : exports);
 

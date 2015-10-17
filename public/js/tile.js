@@ -7,6 +7,7 @@ function Tile(entity, gameboard, sprite) {
 	destinationX = ((gameboard.flipped) ? (gameboard.boardWidth - 1 - entity.x) : entity.x) * (gameboard.tileWidth  + gameboard.tileGap) + gameboard.tileGap;
 
 	Tile._super.constructor.call(this, destinationX, destinationY);
+	this.set("constructorName", "Tile");
 
 	this.set("width", entity.width * gameboard.tileWidth);
 	this.set("height", entity.height * gameboard.tileHeight);
@@ -23,16 +24,6 @@ function Tile(entity, gameboard, sprite) {
 
 utils.inherits(Tile, ActiveEntity);
 
-
-/**
- * Draw tile entity
- */
-Tile.prototype.draw = function() {
-	// call to super method draw from overrided
-	// calling super class (entity) method with current context (tile)
-	Tile._super.draw.call(this);
-
-}
 
 Tile.prototype.toggleSelected = function() {
 	this.set("selected", !this.selected);
@@ -96,5 +87,3 @@ Tile.prototype.getFlippedPath = function(entity) {
 
 	return flippedPath;
 }
-
-

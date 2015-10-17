@@ -3,7 +3,7 @@
 
   "name": "Chrome Chess",
   "description": "This extension enables you to quickly play chess online and be notified upon oponent move",
-  "version": "1.0",
+  "version": "0.1.1",
   "icons": {
     "16": "images/icon.png",
     "32": "images/icon_32.png",

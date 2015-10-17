@@ -5,6 +5,7 @@
  */
 function Menu(x, y, buttons) {
     Menu._super.constructor.call(this, x, y);
+    this.set("constructorName", "Menu");
     this.buttons = buttons;
 
     offset = 0;

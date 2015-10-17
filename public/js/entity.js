@@ -3,6 +3,8 @@
  */
 function Entity(x, y, width, height)
 {
+    this.set("constructorName", "Entity");
+
     // variable defaults 
     x = utils.isUndefined(x, 0);
     y = utils.isUndefined(y, 0);
@@ -33,7 +35,7 @@ Entity.prototype.ENTITY_HEIGHT = 48;
  * Needs to be called after entity changes its visual representation 
  * (width, height, sprite, fillStyle, strokeStyle, strokeWidth)
  */
-Entity.prototype.setDrawingContext = function () {
+Entity.prototype.setDrawingContext = function (spriteRepository) {
     this.canvas = document.createElement('canvas');
     this.canvas.width = this.width;
     this.canvas.height = this.height;
@@ -45,8 +47,14 @@ Entity.prototype.setDrawingContext = function () {
         var args = this.sprite.slice(1);
         args.unshift(this.drawingContext);
 
-        var spriteRepoInstance = gameScreen.spriteRepository[spriteRepo];
-        spriteRepoInstance.draw.apply(spriteRepoInstance, args);
+        // wait some time for sprite repo to be loaded
+        setTimeout(function() {
+            var spriteRepoInstance = (gameScreen) 
+                                        ? gameScreen.spriteRepository[spriteRepo]
+                                        : spriteRepository[spriteRepo];
+            if (spriteRepoInstance)
+                spriteRepoInstance.draw.apply(spriteRepoInstance, args);
+        }, 100);
     } else {
         // fill style
         this.setContextFill();
@@ -99,4 +107,11 @@ Entity.prototype.contains = function (x, y) {
  */
 Entity.prototype.set = function (key, value) { 
     this[key] = value; 
+}
+
+/**
+ * 
+ */
+Entity.prototype.getState = function () {
+    return JSON.parse(JSON.stringify(this));
 }

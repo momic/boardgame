@@ -19,6 +19,7 @@ function SpriteRepository()
 SpriteRepository.prototype.initChessPiecesSprite = function(repositoryVar)
 {
 	var spriteRepo = this;
+
     var img = new Image();
 
     var imgPath;
@@ -104,6 +105,7 @@ SpriteRepository.prototype.initChessPiecesSprite = function(repositoryVar)
     img.onload = function () {
 		var sprite = new Sprite(this, this.width / 6, this.height / 2, spriteLocations);
 		spriteRepo[repositoryVar] = sprite;
+
     };
 
     img.onerror = function () {
