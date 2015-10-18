@@ -258,6 +258,7 @@ GameScreen.prototype.emit = function(action, data)
     else
 		gameScreen.socket.emit(action, data);
 }
+
 /**
  * Promote figure
  */

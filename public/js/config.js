@@ -10,7 +10,7 @@
         TILE_HEIGHT: 40,
         TILE_GAP: 1,
 
-        HOST: "http://localhost:3000", // http://104.236.179.244:3000
+        HOST: "http://104.236.179.244:3000", // "http://localhost:3000"
 
         update: function(tileWidth, tileHeight, tileGap) {
             this.TILE_WIDTH = tileWidth;

@@ -47,14 +47,21 @@ Entity.prototype.setDrawingContext = function (spriteRepository) {
         var args = this.sprite.slice(1);
         args.unshift(this.drawingContext);
 
-        // wait some time for sprite repo to be loaded
-        setTimeout(function() {
-            var spriteRepoInstance = (gameScreen) 
-                                        ? gameScreen.spriteRepository[spriteRepo]
-                                        : spriteRepository[spriteRepo];
-            if (spriteRepoInstance)
+        var spriteRepoInstance = (spriteRepository) 
+                                    ? spriteRepository[spriteRepo]
+                                    : gameScreen.spriteRepository[spriteRepo];
+        if (spriteRepoInstance)
+            spriteRepoInstance.draw.apply(spriteRepoInstance, args);
+        else {
+            // wait some time for sprite repo to be loaded
+            setTimeout(function() {
+                spriteRepoInstance = (spriteRepository) 
+                                    ? spriteRepository[spriteRepo]
+                                    : gameScreen.spriteRepository[spriteRepo];
+
                 spriteRepoInstance.draw.apply(spriteRepoInstance, args);
-        }, 100);
+            }, 100);
+        }
     } else {
         // fill style
         this.setContextFill();
