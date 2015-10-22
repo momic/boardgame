@@ -66,7 +66,7 @@ Gameboard.prototype.setContextFill = function() {
 	    	destinationY = j * (this.tileHeight + this.tileGap) + this.tileGap;
 	    	destinationX = i * (this.tileWidth  + this.tileGap) + this.tileGap;
 
-	        this.drawingContext.fillStyle = ((j % 2) == (i % 2)) ? "#aaa" : "#777";
+	        this.drawingContext.fillStyle = ((j % 2) == (i % 2)) ? "#a0a0a0" : "#535353";
 	        this.drawingContext.fillRect(destinationX, destinationY, this.tileWidth, this.tileHeight);
 		}
 	}

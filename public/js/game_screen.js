@@ -56,7 +56,7 @@ function GameScreen()
 		else
 			this.documentRoot.find('#left-header-text').text('Hello ' + this.player.nick);
 
-		chrome.browserAction.setIcon({path: "images/icon_32.png"});
+		chrome.browserAction.setBadgeText({ text: "" });
 	}
 	else
 		this.setActiveScreen(this.screenRepository.mainMenuScreen());

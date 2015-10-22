@@ -72,11 +72,11 @@ Entity.prototype.setDrawingContext = function (spriteRepository) {
  * Set entity fill
  */
 Entity.prototype.setContextFill = function () {
-    this.fillStyle = utils.isUndefined(this.fillStyle, "#FFF673");
+    this.fillStyle = utils.isUndefined(this.fillStyle, "#282828");
     this.drawingContext.fillStyle=this.fillStyle;
     this.drawingContext.fillRect(0, 0, this.width, this.height);
     
-    this.strokeStyle = utils.isUndefined(this.strokeStyle, "#bbb");
+    this.strokeStyle = utils.isUndefined(this.strokeStyle, "#282828");
     this.strokeWidth = utils.isUndefined(this.strokeWidth, 1);
     this.drawingContext.strokeStyle = this.strokeStyle;
     this.drawingContext.lineWidth   = this.strokeWidth;

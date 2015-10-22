@@ -23,7 +23,7 @@ ExtensionBackground.prototype.initSocketIO = function()
 			chrome.runtime.sendMessage({action:'promote', data:msg},function(response){});
 		else {
 			backgroundProcess.messageQueue.push({action:'promote', data:msg});
-			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+			chrome.browserAction.setBadgeText({ text: "1" });
 		}
 	});
 
@@ -33,7 +33,7 @@ ExtensionBackground.prototype.initSocketIO = function()
 			chrome.runtime.sendMessage({action:'turn complete', data:msg},function(response){});
 		else {
 			backgroundProcess.messageQueue.push({action:'turn complete', data:msg});
-			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+			chrome.browserAction.setBadgeText({ text: "1" });
 		}
 	});
 
@@ -43,7 +43,7 @@ ExtensionBackground.prototype.initSocketIO = function()
 			chrome.runtime.sendMessage({action:'start_game', data:data},function(response){});
 		else {
 			backgroundProcess.messageQueue.push({action:'start_game', data:data});
-			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+			chrome.browserAction.setBadgeText({ text: "1" });
 		}
 	});
 
@@ -53,7 +53,7 @@ ExtensionBackground.prototype.initSocketIO = function()
 			chrome.runtime.sendMessage({action:'side', data:player},function(response){});
 		else {
 			backgroundProcess.messageQueue.push({action:'side', data:player});
-			chrome.browserAction.setIcon({path: "images/icon_warning_32.png"});
+			chrome.browserAction.setBadgeText({ text: "1" });
 		}
 	});
 
