@@ -112,6 +112,8 @@ GameScreen.prototype.initDropupElements = function()
 {
 	$("#new-game-button").mousedown(function() {
 		gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
+		gameScreen.documentRoot.find('#left-header-text').text('Hello ' + gameScreen.player.nick);
+		gameScreen.documentRoot.find('#right-header-text').text('');
 	});
 	$("#full-screen-button").mousedown(function() {
 		gameScreen.enterFullScreen();

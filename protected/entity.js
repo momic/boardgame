@@ -90,7 +90,9 @@ Entity.prototype.checkMove = function (entities, path, entitiesChanged) {
 }
 
 /**
- * Check if entity attacks path
+ * If we move pieceToMove to it's new destination [destinationX, destinationY]
+ * Check if this entity attacks field [tileX, tileY]
+ * Check that other entities does not block attack line
  */
 Entity.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
     return false;

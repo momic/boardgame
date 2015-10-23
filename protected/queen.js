@@ -14,7 +14,9 @@ function Queen(x, y, width, height, side) {
 utils.inherits(Queen, entity.Entity);
 
 /**
- * Check if entity attacks tiles
+ * If we move pieceToMove to it's new destination [destinationX, destinationY]
+ * Check if this entity attacks field [tileX, tileY]
+ * Check that other entities does not block attack line
  */
 Queen.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var diffX = Math.abs(this.x - tileX);

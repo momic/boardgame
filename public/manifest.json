@@ -16,6 +16,7 @@
     "default_popup": "popup.html",
     "default_title": "Chrome Chess"
   },
+  "author": "Zlatan Momic",
   "background": {
     "scripts": [
       "js/socket.io-1.2.0.js",    

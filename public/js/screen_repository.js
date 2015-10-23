@@ -42,7 +42,7 @@ ScreenRepository.prototype.gameBoardScreen = function()
 	var gameboard = new Gameboard(0, 0);
 	if (!gameboard.active) {
 		gameboard.statusBox.setText("Waiting for opponent to join...");
-		gameboard.statusBox.set("x", Math.round((gameboard.width - gameboard.statusBox.width) / 2));		
+		gameboard.statusBox.set("x", Math.round((gameboard.width - gameboard.statusBox.width) / 2));
 	}
 
 	var gameBoardScreen = new Screen("gameBoardScreen");

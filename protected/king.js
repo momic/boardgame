@@ -97,14 +97,23 @@ King.prototype.checkMove = function (entities, path, entitiesChanged) {
 			boardX += Direction.getdx(direction);
 			boardY += Direction.getdy(direction);
 			entities.forEach(function(entity, index) {
-				// check for piece blocking multi step move
+				// check that player side piece is blocking multi step move
 				if ((entity.x == boardX) && (entity.y == boardY) && (entity.side == kingPiece.side))
 					isValid = false;
-				// check that field is not under attack
+				// check that destination is not under attack by opponent entities
 				if ((entity.side != kingPiece.side) && 
 					(entity.isAttacking(entities, boardX, boardY, kingPiece, boardX, boardY))) {
 					isValid = false;
 				}
+
+				// var test = entity.isAttacking(entities, boardX, boardY, kingPiece, boardX, boardY);
+				// if (test) {
+				// 	console.log("--Entity attacking kings destination-----------------------");
+				// 	console.log(entity.clazz);
+				// 	console.log(entity.x);
+				// 	console.log(entity.y);
+				// 	console.log((entity.side == 0) ? 'black' : 'white');
+				// }				
 			});
 		});
 
@@ -114,6 +123,24 @@ King.prototype.checkMove = function (entities, path, entitiesChanged) {
 
 	kingPiece.set("moved", true);
     return true;
+}
+
+/**
+ * If we move pieceToMove to it's new destination [destinationX, destinationY]
+ * Check if this entity attacks field [tileX, tileY]
+ * Check that other entities does not block attack line
+ */
+King.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
+	var diffX = Math.abs(this.x - tileX);
+	var diffY = Math.abs(this.y - tileY);
+
+	if (diffX > 1 || diffY > 1)
+		return false;
+
+	if (diffX == 1 || diffY == 1)
+		return true;
+
+	return false;
 }
 
 

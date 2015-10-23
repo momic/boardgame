@@ -14,13 +14,21 @@ function Bishop(x, y, width, height, side) {
 utils.inherits(Bishop, entity.Entity);
 
 /**
- * Check if entity attacks tiles
+ * If we move pieceToMove to it's new destination [destinationX, destinationY]
+ * Check if this entity attacks field [tileX, tileY]
+ * Check that other entities does not block attack line
  */
-Bishop.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
+Bishop.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) 
+{
 	var diffX = Math.abs(this.x - tileX);
 	var diffY = Math.abs(this.y - tileY);
 
+	// bishop only attacks diagonaly
 	if (diffX != diffY)
+		return false;
+
+	// bishop don't attack it's own position
+	if (diffX == 0 && diffY == 0)
 		return false;
 
 	var minX = Math.min(this.x, tileX);
@@ -44,13 +52,15 @@ Bishop.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, de
 	if (!attacks)
 		return false;
 	
-	entities.forEach(function(entity, entityIndex) {
-		var x = (entity.isEqual(pieceToMove)) ? destinationX : entity.x;
-		var y = (entity.isEqual(pieceToMove)) ? destinationY : entity.y;
+	if (Object.keys(tilesToCheck).length > 0) {
+		entities.forEach(function(entity, entityIndex) {
+			var x = (entity.isEqual(pieceToMove)) ? destinationX : entity.x;
+			var y = (entity.isEqual(pieceToMove)) ? destinationY : entity.y;
 
-		if (tilesToCheck[x] == y)
-			attacks = false;
-	});
+			if (tilesToCheck[x] == y)
+				attacks = false;
+		});
+	}
 
     return attacks;
 }

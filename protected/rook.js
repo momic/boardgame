@@ -4,7 +4,6 @@ var entity = require('./entity.js');
 var boardGameModule = require('../public/js/config.js');
 var Direction = boardGameModule.getDirection();
 
-
 /**
  * Rook class
  */
@@ -14,9 +13,10 @@ function Rook(x, y, width, height, side) {
 
 utils.inherits(Rook, entity.Entity);
 
-
 /**
- * Check if entity attacks tiles
+ * If we move pieceToMove to it's new destination [destinationX, destinationY]
+ * Check if this entity attacks field [tileX, tileY]
+ * Check that other entities does not block attack line
  */
 Rook.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var diffX = Math.abs(this.x - tileX);

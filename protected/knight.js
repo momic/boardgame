@@ -15,7 +15,9 @@ function Knight(x, y, width, height, side) {
 utils.inherits(Knight, entity.Entity);
 
 /**
- * Check if entity attacks tiles
+ * If we move pieceToMove to it's new destination [destinationX, destinationY]
+ * Check if this entity attacks field [tileX, tileY]
+ * Check that other entities does not block attack line
  */
 Knight.prototype.isAttacking = function (entities, tileX, tileY, pieceToMove, destinationX, destinationY) {
 	var knightPiece = this;
