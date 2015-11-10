@@ -45,6 +45,7 @@
 		</div>
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 center-text">
+				<div id="alert-container"></div>
 				<canvas id="canvas" tabindex="0"></canvas>
 			</div>
 		</div>
@@ -55,6 +56,10 @@
 			  </button>
 			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
 			    <li><a id="new-game-button" href="#">New game</a></li>
+			    <li role="separator" class="divider"></li>
+			    <li><a id="send-invitation-button" href="#">Send invitation</a></li>
+			    <li><a id="accept-invitation-button" href="#">Accept invitation</a></li>
+			    <li role="separator" class="divider"></li>
 			    <li><a id="full-screen-button" href="#">Full screen</a></li>
 			  </ul>
 			  <h4 class="pull-left">&nbsp;</h4>
@@ -65,6 +70,33 @@
 			<div class="col-xs-3 col-sm-3 col-md-3 right-text footer-fill">
 				<h4>&nbsp;</h4>
 			</div>
+		</div>
+		<!-- Alerts -->
+	    <div class="alert alert-info hide">
+	        <a href="#" class="close" data-dismiss="alert">&times;</a>
+	        Send this invitation ID to your opponent: <strong></strong>
+	    </div>		
+		<!-- Invitation ID modal -->
+		<div id="invitationIDModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+		  <div class="modal-dialog modal-sm">
+		    <div class="modal-content">
+				<div class="modal-header">
+				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				    <h4 class="modal-title">Enter invitation ID</h4>
+				</div>
+				<div class="modal-body">
+					<form>
+				    	<div class="form-group">
+				        	<label for="invitation-id" class="control-label">Invitation ID:</label>
+				        	<input type="text" class="form-control" id="invitation-id">
+				        </div>
+				    </form>
+				</div>
+		        <div class="modal-footer">
+		        	<button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+		      	</div>
+		    </div>
+		  </div>
 		</div>
 		<!-- Player name modal -->
 		<div id="playerNameModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
@@ -87,7 +119,7 @@
 		      	</div>
 		    </div>
 		  </div>
-		</div>		
+		</div>
 		<!-- Promote modal -->
 		<div id="promoteModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
 		  <div class="modal-dialog modal-sm">

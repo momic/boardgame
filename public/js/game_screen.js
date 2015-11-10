@@ -111,9 +111,48 @@ GameScreen.prototype.loadNickName = function()
 GameScreen.prototype.initDropupElements = function()
 {
 	$("#new-game-button").mousedown(function() {
+		gameScreen.player.invitationGame = false;
+		gameScreen.player.invitationID 	 = false;
+
 		gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
 		gameScreen.documentRoot.find('#left-header-text').text('Hello ' + gameScreen.player.nick);
 		gameScreen.documentRoot.find('#right-header-text').text('');
+	});	
+	$("#send-invitation-button").mousedown(function() {
+		gameScreen.player.invitationGame = true;
+		gameScreen.player.invitationID 	 = false;
+
+		gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
+		gameScreen.documentRoot.find('#left-header-text').text('Hello ' + gameScreen.player.nick);
+		gameScreen.documentRoot.find('#right-header-text').text('');
+	});	
+
+    // invitaion ID modal
+    var $invitationIDModal = this.documentRoot.find('#invitationIDModal');
+    $invitationIDModal.find('form').submit(function(e) {
+      e.preventDefault();
+      $invitationIDModal.modal('hide');
+    });
+    
+    $invitationIDModal.on('shown.bs.modal', function(e) {
+            $invitationIDModal.find('#invitation-id').focus();
+        })
+        .on('hidden.bs.modal', function (e) {
+            var invitationID = $invitationIDModal.find('#invitation-id').val().trim();
+            // If entered put the object into storage
+            if (invitationID) {
+            	gameScreen.player.set("invitationID", invitationID);
+
+				gameScreen.setActiveScreen(gameScreen.screenRepository.gameBoardScreen());
+				gameScreen.documentRoot.find('#left-header-text').text('Hello ' + gameScreen.player.nick);
+				gameScreen.documentRoot.find('#right-header-text').text('');                	
+            }
+        });        
+
+
+	$("#accept-invitation-button").mousedown(function() {
+		gameScreen.player.invitationGame = true;
+        $invitationIDModal.modal('toggle');
 	});
 	$("#full-screen-button").mousedown(function() {
 		gameScreen.enterFullScreen();
@@ -328,6 +367,7 @@ GameScreen.prototype.startGame = function($documentRoot, data)
 	console.log("STARTING GAME...");
 	$documentRoot.find('#left-header-text').text('White: ' + data.whitePlayer.nick);
 	$documentRoot.find('#right-header-text').text('Black: ' + data.blackPlayer.nick);
+	$("#alert-container").empty();
 
 	var gameboard = gameScreen.activeScreen.entities['gameboard'];
 	gameboard.whitePlayerNick = data.whitePlayer.nick;
@@ -336,6 +376,7 @@ GameScreen.prototype.startGame = function($documentRoot, data)
 	// create gameboard tiles
 	gameboard.createTiles(data.entities);
 
+	// clear status box
 	gameboard.statusBox.setText("");
 	gameboard.set("active", true);
 }
@@ -346,6 +387,13 @@ GameScreen.prototype.startGame = function($documentRoot, data)
 GameScreen.prototype.setSide = function(player)
 {
 	this.player.set("side", player.side);
+	this.player.set("invitationGame", player.invitationGame);
+	if (!this.player.invitationID && player.invitationID) {
+		this.player.set("invitationID", player.invitationID);
+
+		// show alert with player.invitationID value
+		$(".alert.alert-info.hide").clone().appendTo("#alert-container").removeClass('hide').find("strong").text(player.invitationID);
+	}	
 
 	var gameboard = this.activeScreen.entities['gameboard'];
 	gameboard.set("flipped", (player.side == 0));
@@ -369,6 +417,9 @@ GameScreen.prototype.socketExtensionListener = function(request, sender, sendRes
 		case 'side':
 			gameScreen.setSide(request.data);
 			gameScreen.storePlayer();
+			break;
+		case 'alert':
+			gameScreen.activeScreen.entities.gameboard.statusBox.setText(request.data.text);
 			break;
 	}
 
@@ -404,6 +455,10 @@ GameScreen.prototype.initSocketIO = function()
 
 	this.socket.on('side', function(player) {
 		gameScreen.setSide(player)
+	});
+
+	this.socket.on('alert', function(data) {
+		gameScreen.activeScreen.entities.gameboard.statusBox.setText(data.text);
 	});
 }
 

@@ -14,6 +14,9 @@ Player.prototype.initialize = function() {
 	this.set("side", false);
 	this.set("nick", "guest");
 
+	this.set("invitationGame", false);
+	this.set("invitationID", false);
+
 	this.set("socketId", "");
 	this.set("activeGameRoom", "");
 	this.set("clientIp", "");

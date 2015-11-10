@@ -3,6 +3,7 @@ var minify = require('express-minify');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var crypto = require('crypto');
 
 var utils = require('./public/js/inheritance_lib.js');
 var entity = require('./protected/entity.js');
@@ -21,6 +22,7 @@ var playerModule = require('./public/js/player.js');
 
 var onlineUsers = [];
 var openGameRooms = [];
+var invitedGameRooms = [];
 var activeGameRooms = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[]}
 
 app.use(minify({cache: __dirname + '/cache'}));
@@ -33,6 +35,40 @@ app.get('/', function(req, res){
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
+
+/**
+ *
+ */
+var createEntities = function () {
+  // create entities
+  var entities = [];
+  for(j=0; j<2; j++) {
+    // pawn
+    for(i=0; i<8; i++)
+      entities.push(new pawn.Pawn(i, j * 5 + 1, 1, 1, j));
+
+    // rook
+    entities.push(new rook.Rook(0, j * 7, 1, 1, j));
+    entities.push(new rook.Rook(7, j * 7, 1, 1, j));
+
+    // bishop
+    entities.push(new bishop.Bishop(2, j * 7, 1, 1, j));
+    entities.push(new bishop.Bishop(5, j * 7, 1, 1, j));
+
+    // queen and king
+    entities.push(new queen.Queen(3, j * 7, 1, 1, j));
+    entities.push(new king.King(4, j * 7, 1, 1, j));
+  }      
+
+  // separate knight to be on top while moving over others
+  for(j=0; j<2; j++) {
+    // knight
+    entities.push(new knight.Knight(1, j * 7, 1, 1, j));
+    entities.push(new knight.Knight(6, j * 7, 1, 1, j));      
+  }
+
+  return entities;
+}
 
 io.on('connection', function(socket){
   // player object
@@ -204,6 +240,12 @@ io.on('connection', function(socket){
 
   // ready for game event
   socket.on('ready_for_game', function(player) {
+    // delete invitedGameRooms for active player
+    invitedGameRooms.forEach(function(invitedGameRoom, invitedGameRoomIndex) {
+      if (invitedGameRoom.activeGameRoom == activePlayer.activeGameRoom)
+        invitedGameRooms.splice(invitedGameRoomIndex, 1);
+    });
+
     // check if there is open games
     if (openGameRooms.length == 0) {
       var timestamp = new Date().getTime();
@@ -215,6 +257,9 @@ io.on('connection', function(socket){
       activePlayer.side = 1;
       // set nick from client object
       activePlayer.nick = player.nick;
+      // set invitation game
+      activePlayer.invitationGame = false;
+      activePlayer.invitationID = false;
 
       openGameRooms.push(activePlayer); //{"room": activePlayer.activeGameRoom, "whitePlayer": player}
       io.to(activePlayer.socketId).emit('side', activePlayer);
@@ -227,40 +272,92 @@ io.on('connection', function(socket){
       activePlayer.side = 0;
       // set nick from client object
       activePlayer.nick = player.nick;
+      // set invitation game
+      activePlayer.invitationGame = false;
+      activePlayer.invitationID = false;
 
       io.to(activePlayer.socketId).emit('side', activePlayer);
 
       // create entities
-      var entities = [];
-      for(j=0; j<2; j++) {
-        // pawn
-        for(i=0; i<8; i++)
-          entities.push(new pawn.Pawn(i, j * 5 + 1, 1, 1, j));
-
-        // rook
-        entities.push(new rook.Rook(0, j * 7, 1, 1, j));
-        entities.push(new rook.Rook(7, j * 7, 1, 1, j));
-
-        // bishop
-        entities.push(new bishop.Bishop(2, j * 7, 1, 1, j));
-        entities.push(new bishop.Bishop(5, j * 7, 1, 1, j));
-
-        // queen and king
-        entities.push(new queen.Queen(3, j * 7, 1, 1, j));
-        entities.push(new king.King(4, j * 7, 1, 1, j));
-      }      
-
-      // separate knight to be on top while moving over others
-      for(j=0; j<2; j++) {
-        // knight
-        entities.push(new knight.Knight(1, j * 7, 1, 1, j));
-        entities.push(new knight.Knight(6, j * 7, 1, 1, j));      
-      }
+      var entities = createEntities();
 
       // assign active room
       activeGameRooms[activePlayer.activeGameRoom] = {'entities': entities, 'entitiesAdded': [], 'entitiesChanged': [], 'entitiesDeleted': [], "whitePlayer": openGameRoom, "blackPlayer": activePlayer};
       // start game
       io.to(activePlayer.activeGameRoom).emit('start_game', {"entities": entities, "whitePlayer": openGameRoom, "blackPlayer": activePlayer}); //"roomId": activePlayer.activeGameRoom, 
+    }
+  });
+
+  // game invitation
+  socket.on('invitation_game', function(player) {
+    // delete openGameRooms for active player
+    openGameRooms.forEach(function(openGameRoom, openGameRoomIndex) {
+      if (openGameRoom.activeGameRoom == activePlayer.activeGameRoom)
+        openGameRooms.splice(openGameRoomIndex, 1);  
+    });
+
+    // check if player has invitationID set
+    if (player.invitationID == false) {
+      var timestamp = new Date().getTime();
+      activePlayer.activeGameRoom = activePlayer.socketId + '::' + timestamp;
+      // create new room
+      socket.join(activePlayer.activeGameRoom);
+
+      // set as white
+      activePlayer.side = 1;
+      // set nick from client object
+      activePlayer.nick = player.nick;
+      // set invitation game
+      activePlayer.invitationGame = player.invitationGame;
+
+      // make hash value
+      activePlayer.invitationID = crypto.createHash('md5').update(activePlayer.socketId + '::' + timestamp).digest('hex');
+
+      invitedGameRooms.push(activePlayer);
+      io.to(activePlayer.socketId).emit('side', activePlayer);
+    }
+    else {
+      var whitePlayer;
+      invitedGameRooms.forEach(function(invitedGameRoom, invitedGameRoomIndex) {
+        if (invitedGameRoom.invitationID == player.invitationID) {
+          whitePlayer = invitedGameRoom;
+          invitedGameRooms.splice(invitedGameRoomIndex, 1);
+        }
+      });
+
+      if (!whitePlayer) {
+        io.to(activePlayer.socketId).emit('alert', {"text": "Invitation ID not valid! Try again..."});
+        return false;
+      }
+
+      activePlayer.activeGameRoom = whitePlayer.activeGameRoom;
+      socket.join(activePlayer.activeGameRoom);
+      // set player side
+      activePlayer.side = 0;
+      // set nick from client object
+      activePlayer.nick = player.nick;
+      // set invitation game
+      activePlayer.invitationGame = player.invitationGame;
+      activePlayer.invitationID = player.invitationID;
+
+      io.to(activePlayer.socketId).emit('side', activePlayer);
+
+      // create entities
+      var entities = createEntities();
+
+      // assign active room
+      activeGameRooms[activePlayer.activeGameRoom] = {
+        'entities': entities, 
+        'entitiesAdded': [], 
+        'entitiesChanged': [], 
+        'entitiesDeleted': [], 
+        'whitePlayer': whitePlayer,
+        'blackPlayer': activePlayer
+      };
+
+      // start game
+      io.to(activePlayer.activeGameRoom).emit('start_game', 
+        {'entities': entities, 'whitePlayer': whitePlayer, 'blackPlayer': activePlayer});
     }
   });
 
@@ -274,6 +371,13 @@ io.on('connection', function(socket){
       if (openGameRoom.activeGameRoom == activePlayer.activeGameRoom)
         openGameRooms.splice(openGameRoomIndex, 1);  
     });
+
+    // delete invitedGameRooms of disconected user
+    invitedGameRooms.forEach(function(invitedGameRoom, invitedGameRoomIndex) {
+      if (invitedGameRoom.activeGameRoom == activePlayer.activeGameRoom)
+        invitedGameRooms.splice(invitedGameRoomIndex, 1);
+    });
+
 
     // TODO: preserve activeGameRooms of disconected user for a while, give option to return to game
   });

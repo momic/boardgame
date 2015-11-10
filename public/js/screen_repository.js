@@ -48,7 +48,8 @@ ScreenRepository.prototype.gameBoardScreen = function()
 	var gameBoardScreen = new Screen("gameBoardScreen");
 	gameBoardScreen.addEntity("gameboard", gameboard);
 
-	gameScreen.emit('ready_for_game', gameScreen.player);
+	var gameType = (gameScreen.player.invitationGame) ? 'invitation_game' : 'ready_for_game';
+	gameScreen.emit(gameType, gameScreen.player);
 	
 	return gameBoardScreen;
 }

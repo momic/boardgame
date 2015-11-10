@@ -57,6 +57,16 @@ ExtensionBackground.prototype.initSocketIO = function()
 		}
 	});
 
+	this.socket.on('alert', function(data) {
+		var popupOpen = chrome.extension.getViews({ type: "popup" }).length;
+		if (popupOpen)
+			chrome.runtime.sendMessage({action:'alert', data:data},function(response){});
+		else {
+			backgroundProcess.messageQueue.push({action:'alert', data:data});
+			chrome.browserAction.setBadgeText({ text: "1" });
+		}
+	});
+
 	chrome.runtime.onMessage.addListener(
 	  function(request, sender, sendResponse) {
 	    console.log(sender.tab ?
@@ -68,6 +78,9 @@ ExtensionBackground.prototype.initSocketIO = function()
 	    		break;
 	    	case 'ready_for_game':
 	    		backgroundProcess.socket.emit('ready_for_game', request.data);
+	    		break;
+	    	case 'invitation_game':
+	    		backgroundProcess.socket.emit('invitation_game', request.data);
 	    		break;
 	    }	    
 	  });
