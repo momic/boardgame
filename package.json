@@ -1,7 +1,7 @@
 {
-  "name": "socket-chat-example",
-  "version": "0.0.1",
-  "description": "my first socket.io app",
+  "name": "BoardGame",
+  "version": "0.1.5",
+  "description": "Chess BoardGame",
   "dependencies": {
     "express": "^4.13.3",
     "express-minify": "^0.1.6",
