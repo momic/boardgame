@@ -71,13 +71,19 @@ var createEntities = function () {
 }
 
 io.on('connection', function(socket){
+  var whitelisted = [];
+  var blacklisted = [];
+  if ((whitelisted.indexOf(socket.handshake.address) < 0) && (blacklisted.indexOf(socket.handshake.address) >= 0 /* || onlineUsers.length > 1000 */)) {
+    socket.disconnect();
+  }
+
   // player object
   var activePlayer = new playerModule.Player();
   activePlayer.set("socketId", socket.id);
   activePlayer.set("activeGameRoom", false);
   activePlayer.set("clientIp", socket.handshake.address);
   console.log('a user connected from adress: ' + activePlayer.clientIp);
-
+  
   // online users  
   onlineUsers[activePlayer.socketId] = socket;
 
