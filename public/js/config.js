@@ -11,6 +11,7 @@
         TILE_GAP: 1,
 
         HOST: "http://104.236.179.244:3000", // "http://localhost:3000"
+        CONNECTIONS_LIMIT: 6144,
 
         update: function(tileWidth, tileHeight, tileGap) {
             this.TILE_WIDTH = tileWidth;

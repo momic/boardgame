@@ -1,29 +1,27 @@
 var express = require('express');
-var minify = require('express-minify');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var crypto = require('crypto');
+var minify  = require('express-minify');
+var app     = express();
+var http    = require('http').Server(app);
+var io      = require('socket.io')(http);
+var crypto  = require('crypto');
 
-var utils = require('./public/js/inheritance_lib.js');
-var entity = require('./protected/entity.js');
+var utils   = require('./public/js/inheritance_lib.js');
+var entity  = require('./protected/entity.js');
 
-var pawn = require('./protected/pawn.js');
-var rook = require('./protected/rook.js');
-var knight = require('./protected/knight.js');
-var queen = require('./protected/queen.js');
-var king = require('./protected/king.js');
-var bishop = require('./protected/bishop.js');
+var pawn    = require('./protected/pawn.js');
+var rook    = require('./protected/rook.js');
+var knight  = require('./protected/knight.js');
+var queen   = require('./protected/queen.js');
+var king    = require('./protected/king.js');
+var bishop  = require('./protected/bishop.js');
 
 var boardGameModule = require('./public/js/config.js');
-var Direction = boardGameModule.getDirection();
+var Direction       = boardGameModule.getDirection();
+var playerModule    = require('./public/js/player.js');
 
-var playerModule = require('./public/js/player.js');
-
-var onlineUsers = [];
-var openGameRooms = [];
+var openGameRooms    = [];
 var invitedGameRooms = [];
-var activeGameRooms = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[]}
+var activeGameRooms  = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[]}
 
 app.use(minify({cache: __dirname + '/cache'}));
 app.use(express.static('public'));
@@ -73,8 +71,11 @@ var createEntities = function () {
 io.on('connection', function(socket){
   var whitelisted = [];
   var blacklisted = [];
-  if ((whitelisted.indexOf(socket.handshake.address) < 0) && (blacklisted.indexOf(socket.handshake.address) >= 0 /* || onlineUsers.length > 1000 */)) {
-    socket.disconnect();
+  if ((whitelisted.indexOf(socket.handshake.address) < 0)
+       && (blacklisted.indexOf(socket.handshake.address) >= 0
+           || Object.keys(io.sockets.sockets).length > boardGameModule.Config.CONNECTIONS_LIMIT)) {
+    socket.disconnect(true);
+    return;
   }
 
   // player object
@@ -83,9 +84,6 @@ io.on('connection', function(socket){
   activePlayer.set("activeGameRoom", false);
   activePlayer.set("clientIp", socket.handshake.address);
   console.log('a user connected from adress: ' + activePlayer.clientIp);
-  
-  // online users  
-  onlineUsers[activePlayer.socketId] = socket;
 
   // move event
   socket.on('move', function(msg){
@@ -265,7 +263,7 @@ io.on('connection', function(socket){
       activePlayer.nick = player.nick;
       // set invitation game
       activePlayer.invitationGame = false;
-      activePlayer.invitationID = false;
+      activePlayer.invitationID   = false;
 
       openGameRooms.push(activePlayer); //{"room": activePlayer.activeGameRoom, "whitePlayer": player}
       io.to(activePlayer.socketId).emit('side', activePlayer);
@@ -280,7 +278,7 @@ io.on('connection', function(socket){
       activePlayer.nick = player.nick;
       // set invitation game
       activePlayer.invitationGame = false;
-      activePlayer.invitationID = false;
+      activePlayer.invitationID   = false;
 
       io.to(activePlayer.socketId).emit('side', activePlayer);
 
@@ -369,9 +367,6 @@ io.on('connection', function(socket){
 
   // disconnect event
   socket.on('disconnect', function() {
-    // delete it from online users
-    delete onlineUsers[activePlayer.socketId];
-
     // delete openGameRooms of disconected user
     openGameRooms.forEach(function(openGameRoom, openGameRoomIndex) {
       if (openGameRoom.activeGameRoom == activePlayer.activeGameRoom)

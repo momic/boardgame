@@ -6,17 +6,19 @@ function ExtensionBackground() {
     this.messageQueue = [];
 
     // Socket
-    this.initSocketIO();
+    this.initSocketActions();
 }
 
 /**
  * SocketIO initialization
  */
-ExtensionBackground.prototype.initSocketIO = function () {
+ExtensionBackground.prototype.initSocketIO = function(request) {
     this.socket = io.connect(boardGameModule.Config.HOST);
     this.socket.on('connect', function () {
         // clear previously buffered data when reconnecting
         this.sendBuffer = [];
+
+        backgroundProcess.processActions(request);
     });
 
     this.socket.on('promote', function (msg) {
@@ -73,28 +75,38 @@ ExtensionBackground.prototype.initSocketIO = function () {
             chrome.browserAction.setBadgeText({text: "1"});
         }
     });
+}
 
+/**
+ * SocketIO initialization
+ */
+ExtensionBackground.prototype.initSocketActions = function () {
     chrome.runtime.onMessage.addListener(
         function (request, sender, sendResponse) {
-            console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-            if (backgroundProcess.socket.connected) {
-                switch (request.action) {
-                    case 'move':
-                        backgroundProcess.socket.emit('move', request.data);
-                        break;
-                    case 'ready_for_game':
-                        backgroundProcess.socket.emit('ready_for_game', request.data);
-                        break;
-                    case 'invitation_game':
-                        backgroundProcess.socket.emit('invitation_game', request.data);
-                        break;
-                }
-            } else {
-                // do nothing
+            // console.log(sender.tab ?
+            //    "from a content script:" + sender.tab.url :
+            //    "from the extension");
+            if (!((typeof backgroundProcess.socket !== 'undefined') && backgroundProcess.socket.connected)) {
+                backgroundProcess.initSocketIO(request);
+                return;
             }
+
+            backgroundProcess.processActions(request);
         });
+}
+
+ExtensionBackground.prototype.processActions = function (request) {
+    switch (request.action) {
+        case 'move':
+            backgroundProcess.socket.emit('move', request.data);
+            break;
+        case 'ready_for_game':
+            backgroundProcess.socket.emit('ready_for_game', request.data);
+            break;
+        case 'invitation_game':
+            backgroundProcess.socket.emit('invitation_game', request.data);
+            break;
+    }
 }
 
 var backgroundProcess = new ExtensionBackground();
