@@ -87,7 +87,7 @@ io.on('connection', function(socket){
 
   // move event
   socket.on('move', function(msg){
-    if (activePlayer.activeGameRoom === false)
+    if (activePlayer.activeGameRoom === false || (typeof activeGameRooms[activePlayer.activeGameRoom] === 'undefined'))
       return;
 
     var boardY = (msg.tileToMove.y - msg.tileToMove.gap) / (msg.tileToMove.height + msg.tileToMove.gap);
