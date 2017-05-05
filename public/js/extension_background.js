@@ -12,7 +12,7 @@ function ExtensionBackground() {
 /**
  * SocketIO initialization
  */
-ExtensionBackground.prototype.initSocketIO = function(request) {
+ExtensionBackground.prototype.initSocketIO = function (request) {
     this.socket = io.connect(boardGameModule.Config.HOST);
     this.socket.on('connect', function () {
         // clear previously buffered data when reconnecting
@@ -75,7 +75,7 @@ ExtensionBackground.prototype.initSocketIO = function(request) {
             chrome.browserAction.setBadgeText({text: "1"});
         }
     });
-}
+};
 
 /**
  * SocketIO initialization
@@ -93,7 +93,7 @@ ExtensionBackground.prototype.initSocketActions = function () {
 
             backgroundProcess.processActions(request);
         });
-}
+};
 
 ExtensionBackground.prototype.processActions = function (request) {
     switch (request.action) {
@@ -107,6 +107,6 @@ ExtensionBackground.prototype.processActions = function (request) {
             backgroundProcess.socket.emit('invitation_game', request.data);
             break;
     }
-}
+};
 
 var backgroundProcess = new ExtensionBackground();

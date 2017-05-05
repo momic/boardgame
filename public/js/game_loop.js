@@ -7,8 +7,7 @@ var gameScreen = null;
 /**
  * Main loop runned at fixed fps
  */
-function drawCanvas() 
-{
+function drawCanvas() {
     // draw game screen
     gameScreen.draw();
 }
@@ -16,12 +15,12 @@ function drawCanvas()
 /**
  * On document ready
  */
-document.addEventListener('DOMContentLoaded', function () {	
+document.addEventListener('DOMContentLoaded', function () {
     gameScreen = new GameScreen();
 
     // clear canvas
     gameScreen.clearActiveScreen();
-    
+
     // draw canvas every 30ms => 33fps
     setInterval(drawCanvas, 30);
 

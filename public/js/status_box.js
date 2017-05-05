@@ -4,9 +4,8 @@
 function StatusBox(text) {
     StatusBox._super.constructor.call(this);
     this.set("constructorName", "StatusBox");
-	this.initialize();
+    this.initialize();
     this.setText(text);
-
 }
 
 utils.inherits(StatusBox, Entity);
@@ -14,27 +13,27 @@ utils.inherits(StatusBox, Entity);
 /**
  * Set status box state
  */
-StatusBox.prototype.initialize = function() {
+StatusBox.prototype.initialize = function () {
     this.set("font", "18pt Arial");
     gameScreen.context.font = this.font;
     this.set("fillStyle", "#fff");
-	this.setDrawingContext();
-}
+    this.setDrawingContext();
+};
 
 /**
  * Draw status box entity
  *
  */
 StatusBox.prototype.draw = function () {
-	gameScreen.context.font = this.font;
-	gameScreen.context.fillStyle = this.fillStyle;
-	gameScreen.context.fillText(this.text, this.x, this.y);
-}
+    gameScreen.context.font      = this.font;
+    gameScreen.context.fillStyle = this.fillStyle;
+    gameScreen.context.fillText(this.text, this.x, this.y);
+};
 
 /**
  * Set text of status box
  */
-StatusBox.prototype.setText = function(text) {
-	this.set("text", text);
-	this.set("width", gameScreen.context.measureText(this.text).width);
-}
+StatusBox.prototype.setText = function (text) {
+    this.set("text", text);
+    this.set("width", gameScreen.context.measureText(this.text).width);
+};

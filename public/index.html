@@ -1,148 +1,154 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Board Game</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+<head>
+    <title>Board Game</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 
-		<link rel="stylesheet" href="css/bootstrap-3.3.5.min.css">
-		<link rel="stylesheet" href="css/styles.css" />		
-  
-  		<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
-  		<script type="text/javascript" src="js/bootstrap-3.3.5.min.js"></script>
-		<script type="text/javascript" src="js/socket.io-1.7.3.js"></script>
-		
-		<script type="text/javascript" src="js/config.js"></script>
-		<script type="text/javascript" src="js/inheritance_lib.js"></script>
-		<script type="text/javascript" src="js/entity.js"></script>
-		<script type="text/javascript" src="js/button.js"></script>
-		<script type="text/javascript" src="js/menu.js"></script>            
-		<script type="text/javascript" src="js/status_box.js"></script>
-		<script type="text/javascript" src="js/active_entity.js"></script>
-		<script type="text/javascript" src="js/tile.js"></script>
-		<script type="text/javascript" src="js/gameboard.js"></script>
-		<script type="text/javascript" src="js/sprite.js"></script>
-		<script type="text/javascript" src="js/sprite_repository.js"></script>		
-		<script type="text/javascript" src="js/screen.js"></script>
-		<script type="text/javascript" src="js/screen_repository.js"></script>
+    <link rel="stylesheet" href="css/bootstrap-3.3.5.min.css">
+    <link rel="stylesheet" href="css/styles.css"/>
 
-		<script type="text/javascript" src="js/player.js"></script>
-		<script type="text/javascript" src="js/game_screen.js"></script>
-		<script type="text/javascript" src="js/game_loop.js"></script>
-	</head>
-	<body>
-		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 header-fill">
-				<div class="col-xs-6 col-sm-6 col-md-6 left-text">
-					<h4 id="left-header-text"></h4>
-				</div>
-				<div class="col-xs-6 col-sm-6 col-md-6 right-text">
-					<h4 id="right-header-text"></h4>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 center-text">
-				<div id="alert-container"></div>
-				<canvas id="canvas" tabindex="0"></canvas>
-			</div>
-		</div>
-		<div class="row">
-			<div class="dropup pull-left col-xs-3 col-sm-3 col-md-3 footer-fill">
-			  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			    <span class="caret"></span>
-			  </button>
-			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
-			    <li><a id="new-game-button" href="#">New game</a></li>
-			    <li role="separator" class="divider"></li>
-			    <li><a id="send-invitation-button" href="#">Send invitation</a></li>
-			    <li><a id="accept-invitation-button" href="#">Accept invitation</a></li>
-			    <li role="separator" class="divider"></li>
-			    <li><a id="full-screen-button" href="#">Full screen</a></li>
-			  </ul>
-			  <h4 class="pull-left">&nbsp;</h4>
-			</div>	
-			<div class="col-xs-6 col-sm-6 col-md-6 center-text footer-fill">
-				<h4>Chrome Chess</h4>
-			</div>
-			<div class="col-xs-3 col-sm-3 col-md-3 right-text footer-fill">
-				<h4>&nbsp;</h4>
-			</div>
-		</div>
-		<!-- Alerts -->
-	    <div class="alert alert-info hide">
-	        <a href="#" class="close" data-dismiss="alert">&times;</a>
-	        Send this invitation ID to your opponent: <strong></strong>
-	    </div>		
-		<!-- Invitation ID modal -->
-		<div id="invitationIDModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-		  <div class="modal-dialog modal-sm">
-		    <div class="modal-content">
-				<div class="modal-header">
-				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				    <h4 class="modal-title">Enter invitation ID</h4>
-				</div>
-				<div class="modal-body">
-					<form>
-				    	<div class="form-group">
-				        	<label for="invitation-id" class="control-label">Invitation ID:</label>
-				        	<input type="text" class="form-control" id="invitation-id">
-				        </div>
-				    </form>
-				</div>
-		        <div class="modal-footer">
-		        	<button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
-		      	</div>
-		    </div>
-		  </div>
-		</div>
-		<!-- Player name modal -->
-		<div id="playerNameModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-		  <div class="modal-dialog modal-sm">
-		    <div class="modal-content">
-				<div class="modal-header">
-				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				    <h4 class="modal-title">Enter your name</h4>
-				</div>
-				<div class="modal-body">
-					<form>
-				    	<div class="form-group">
-				        	<label for="nick-name" class="control-label">Nick:</label>
-				        	<input type="text" class="form-control" id="nick-name">
-				        </div>
-				    </form>
-				</div>
-		        <div class="modal-footer">
-		        	<button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
-		      	</div>
-		    </div>
-		  </div>
-		</div>
-		<!-- Promote modal -->
-		<div id="promoteModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-		  <div class="modal-dialog modal-sm">
-		    <div class="modal-content">
-				<div class="modal-header">
-				    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				    <h4 class="modal-title">Promote pawn to</h4>
-				</div>
-				<div class="modal-body">
-					<form>
-				    	<div class="form-group">
-				    		<label><input type="radio" name="optPromote" value="queen" checked/> Queen</label><br/>
-				    		<label><input type="radio" name="optPromote" value="rook"/> Rook</label><br/>
-				    		<label><input type="radio" name="optPromote" value="knight"/> Knight</label><br/>
-				    		<label><input type="radio" name="optPromote" value="bishop"/> Bishop</label>
-				        </div>
-				    </form>
-				</div>
-		        <div class="modal-footer">
-		        	<button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
-		      	</div>
-		    </div>
-		  </div>
-		</div>				
-	</body>
+    <script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap-3.3.5.min.js"></script>
+    <script type="text/javascript" src="js/socket.io-1.7.3.js"></script>
+
+    <script type="text/javascript" src="js/config.js"></script>
+    <script type="text/javascript" src="js/inheritance_lib.js"></script>
+    <script type="text/javascript" src="js/entity.js"></script>
+    <script type="text/javascript" src="js/button.js"></script>
+    <script type="text/javascript" src="js/menu.js"></script>
+    <script type="text/javascript" src="js/status_box.js"></script>
+    <script type="text/javascript" src="js/active_entity.js"></script>
+    <script type="text/javascript" src="js/tile.js"></script>
+    <script type="text/javascript" src="js/gameboard.js"></script>
+    <script type="text/javascript" src="js/sprite.js"></script>
+    <script type="text/javascript" src="js/sprite_repository.js"></script>
+    <script type="text/javascript" src="js/screen.js"></script>
+    <script type="text/javascript" src="js/screen_repository.js"></script>
+
+    <script type="text/javascript" src="js/player.js"></script>
+    <script type="text/javascript" src="js/game_screen.js"></script>
+    <script type="text/javascript" src="js/game_loop.js"></script>
+</head>
+<body>
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 header-fill">
+        <div class="col-xs-6 col-sm-6 col-md-6 left-text">
+            <h4 id="left-header-text"></h4>
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 right-text">
+            <h4 id="right-header-text"></h4>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 center-text">
+        <div id="alert-container"></div>
+        <canvas id="canvas" tabindex="0"></canvas>
+    </div>
+</div>
+<div class="row">
+    <div class="dropup pull-left col-xs-3 col-sm-3 col-md-3 footer-fill">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+            <li><a id="new-game-button" href="#">New game</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a id="send-invitation-button" href="#">Send invitation</a></li>
+            <li><a id="accept-invitation-button" href="#">Accept invitation</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a id="full-screen-button" href="#">Full screen</a></li>
+        </ul>
+        <h4 class="pull-left">&nbsp;</h4>
+    </div>
+    <div class="col-xs-6 col-sm-6 col-md-6 center-text footer-fill">
+        <h4>Chrome Chess</h4>
+    </div>
+    <div class="col-xs-3 col-sm-3 col-md-3 right-text footer-fill">
+        <h4>&nbsp;</h4>
+    </div>
+</div>
+<!-- Alerts -->
+<div class="alert alert-info hide">
+    <a href="#" class="close" data-dismiss="alert">&times;</a>
+    Send this invitation ID to your opponent: <strong></strong>
+</div>
+<!-- Invitation ID modal -->
+<div id="invitationIDModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Enter invitation ID</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="invitation-id" class="control-label">Invitation ID:</label>
+                        <input type="text" class="form-control" id="invitation-id">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Player name modal -->
+<div id="playerNameModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog"
+     aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Enter your name</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="nick-name" class="control-label">Nick:</label>
+                        <input type="text" class="form-control" id="nick-name">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Promote modal -->
+<div id="promoteModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog"
+     aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Promote pawn to</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label><input type="radio" name="optPromote" value="queen" checked/> Queen</label><br/>
+                        <label><input type="radio" name="optPromote" value="rook"/> Rook</label><br/>
+                        <label><input type="radio" name="optPromote" value="knight"/> Knight</label><br/>
+                        <label><input type="radio" name="optPromote" value="bishop"/> Bishop</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
 </html>

@@ -1,6 +1,6 @@
 /**
  * Menu class
- * 
+ *
  * Vertical ordered list of buttons
  */
 function Menu(x, y, buttons) {
@@ -8,17 +8,17 @@ function Menu(x, y, buttons) {
     this.set("constructorName", "Menu");
     this.buttons = buttons;
 
-    offset = 0;
-    maxWidth = 0;
-    this.buttons.forEach(function(button) {
+    var offset   = 0;
+    var maxWidth = 0;
+    this.buttons.forEach(function (button) {
         button.setPosition(x, y + offset);
         offset += button.height + 1;
         if (button.width > maxWidth) {
             maxWidth = button.width;
         }
     });
-    
-    this.width = maxWidth;
+
+    this.width  = maxWidth;
     this.height = offset;
     this.setDrawingContext();
 }
@@ -30,7 +30,7 @@ utils.inherits(Menu, Entity);
  */
 Menu.prototype.draw = function () {
     Menu._super.draw.call(this);
-    this.buttons.forEach(function(button) {
+    this.buttons.forEach(function (button) {
         button.draw();
     });
-}
+};

@@ -7,10 +7,10 @@ function ActiveEntity(x, y) {
     // create entity in state of no motion 
     // and reset movementOffset to zero
     this.stop();
-    
+
     // set two speed velocities
     this.set("defaultSpeed", 8);
-    this.set("fastSpeed", 16);    
+    this.set("fastSpeed", 16);
 
     // default values
     this.set("path", []);
@@ -27,14 +27,14 @@ ActiveEntity.prototype.applyMovement = function () {
     if (!this.isMoving()) {
         return;
     }
-    
+
     // calculate deltas
-    dx = boardGameModule.Direction.getdx(this.direction);
-    deltax = dx * this.speed;
-    
-    dy = boardGameModule.Direction.getdy(this.direction);
-    deltay = dy * this.speed;        
-     
+    var dx     = boardGameModule.Direction.getdx(this.direction);
+    var deltax = dx * this.speed;
+
+    var dy     = boardGameModule.Direction.getdy(this.direction);
+    var deltay = dy * this.speed;
+
     // move this.speed of pixels only if this translation will not complete the move
     if (!this.isMoveCompleted(dx)) {
         this.setPosition(this.x + deltax, this.y + deltay);
@@ -55,41 +55,40 @@ ActiveEntity.prototype.applyMovement = function () {
         if (gameScreen.isChromeExtension)
             gameScreen.storeActiveScreen(gameScreen.activeScreen);
     }
-}
+};
 
 /**
  * Determine if this entity has move at least a whole tile.
- * 
+ *
  * @param dx X-axis direction coefficient
- * @return true if moved a whole tile.
+ * @return boolean ; true if moved a whole tile.
  */
-ActiveEntity.prototype.isMoveCompleted = function(dx) {
+ActiveEntity.prototype.isMoveCompleted = function (dx) {
     // add speed to movementOffset
     this.movementOffset += this.speed;
-    
+
     // calculate moveSize to complete the move
     // we want to move for complete width or height pixels
-    moveSize = 0;
-    if (dx == 0) {
+    var moveSize = 0;
+    if (dx === 0) {
         moveSize += this.height + this.gap;
     } else {
         moveSize += this.width + this.gap;
     }
-    
+
     // check if move is finished
     // and recalculate movementOffset
     if (this.movementOffset >= moveSize) {
-            this.movementOffset -= moveSize;
-            return true;
+        this.movementOffset -= moveSize;
+        return true;
     } else {
-            return false;
-            
+        return false;
     }
-}
+};
 
 /**
  * Stops entity movement.
- * 
+ *
  * direction - facing direction
  * speed - current speed
  * movementOffset - amount of uncommitted tile movement.
@@ -98,30 +97,30 @@ ActiveEntity.prototype.stop = function () {
     this.set("direction", boardGameModule.Direction.STOP);
     this.set("speed", 0);
     this.set("movementOffset", 0);
-}
+};
 
 /**
  * Sets direction and speed
  */
-ActiveEntity.prototype.setMoveVector = function (direction, speed) {    
+ActiveEntity.prototype.setMoveVector = function (direction, speed) {
     speed = utils.isUndefined(speed, this.defaultSpeed);
 
-    if (this.direction != direction) {
+    if (this.direction !== direction) {
         this.set("direction", direction);
     }
 
-    if (this.speed != speed) {
-        this.set("speed", speed);    
+    if (this.speed !== speed) {
+        this.set("speed", speed);
     }
-}
+};
 
 /**
  * Set path and speed
  */
-ActiveEntity.prototype.setPath = function (path, flipped, speed) {    
+ActiveEntity.prototype.setPath = function (path, flipped, speed) {
     this.set("path", path);
     this.walkPath(speed);
-}
+};
 
 
 /**
@@ -130,18 +129,18 @@ ActiveEntity.prototype.setPath = function (path, flipped, speed) {
 ActiveEntity.prototype.walkPath = function (speed) {
     var walking = this.path.length > 0;
     if (walking) {
-        direction = this.path.pop();
-        this.set("movementOffset", 0);        
+        var direction = this.path.pop();
+        this.set("movementOffset", 0);
         this.setMoveVector(direction, speed);
     }
 
     return walking;
-}
+};
 
 
 /**
  * Check if tile is moving
  */
 ActiveEntity.prototype.isMoving = function () {
-    return ((this.direction != boardGameModule.Direction.STOP) && (this.speed != 0));
-}
+    return ((this.direction !== boardGameModule.Direction.STOP) && (this.speed !== 0));
+};
