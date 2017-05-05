@@ -21,7 +21,7 @@ var playerModule    = require('./public/js/player.js');
 
 var openGameRooms    = [];
 var invitedGameRooms = [];
-var activeGameRooms  = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[]}
+var activeGameRooms  = []; // room_name: {entities:[], entitiesAdded:[], entitiesChanged:[], entitiesDeleted:[], whitePlayer: {}, blackPlayer: {}}
 
 app.use(minify({cache: __dirname + '/cache'}));
 app.use(express.static('public'));
@@ -68,6 +68,39 @@ var createEntities = function () {
     return entities;
 };
 
+/**
+ * Leave player rooms helper
+ */
+var leavePlayerRooms = function (player, socket, alert) {
+    if (player) {
+        // delete openGameRooms of disconnected user
+        openGameRooms.forEach(function (openGameRoom, openGameRoomIndex) {
+            if (openGameRoom.activeGameRoom === player.activeGameRoom)
+                openGameRooms.splice(openGameRoomIndex, 1);
+        });
+
+        // delete invitedGameRooms of disconnected user
+        invitedGameRooms.forEach(function (invitedGameRoom, invitedGameRoomIndex) {
+            if (invitedGameRoom.activeGameRoom === player.activeGameRoom)
+                invitedGameRooms.splice(invitedGameRoomIndex, 1);
+        });
+
+        var roomsToLeave = io.sockets.adapter.sids[player.socketId];
+        if (roomsToLeave) {
+            if (alert) {
+                // notify other player
+                io.to(player.socketId).emit('alert', {"text": alert}, {"action": 'alert'});
+            }
+
+            for (var room in roomsToLeave) {
+                if (roomsToLeave.hasOwnProperty(room) && room.indexOf('::') >= 0) {
+                    io.sockets.sockets[player.socketId].leave(room);
+                }
+            }
+        }
+    }
+};
+
 io.on('connection', function (socket) {
     var whitelisted = [];
     var blacklisted = [];
@@ -86,7 +119,7 @@ io.on('connection', function (socket) {
     activePlayer.set("socketId", socket.id);
     activePlayer.set("activeGameRoom", false);
     activePlayer.set("clientIp", socket.handshake.address);
-    console.log('a user connected from adress: ' + activePlayer.clientIp);
+    console.log('a user connected from address: ' + activePlayer.clientIp);
 
     // move event
     socket.on('move', function (msg) {
@@ -252,11 +285,12 @@ io.on('connection', function (socket) {
 
     // ready for game event
     socket.on('ready_for_game', function (player) {
-        // delete invitedGameRooms for active player
-        invitedGameRooms.forEach(function (invitedGameRoom, invitedGameRoomIndex) {
-            if (invitedGameRoom.activeGameRoom === activePlayer.activeGameRoom)
-                invitedGameRooms.splice(invitedGameRoomIndex, 1);
-        });
+        // set nick from client object
+        activePlayer.nick = player.nick;
+
+        leavePlayerRooms(activePlayer, socket);
+        leavePlayerRooms(activePlayer.opponent(activeGameRooms), socket, 'Opponent resigned. You won!');
+        delete activeGameRooms[activePlayer.activeGameRoom];
 
         // check if there is open games
         if (openGameRooms.length === 0) {
@@ -266,9 +300,8 @@ io.on('connection', function (socket) {
             socket.join(activePlayer.activeGameRoom);
 
             // set as white
-            activePlayer.side           = 1;
-            // set nick from client object
-            activePlayer.nick           = player.nick;
+            activePlayer.side = 1;
+
             // set invitation game
             activePlayer.invitationGame = false;
             activePlayer.invitationID   = false;
@@ -280,10 +313,10 @@ io.on('connection', function (socket) {
             var openGameRoom            = openGameRooms.pop();
             activePlayer.activeGameRoom = openGameRoom.activeGameRoom;
             socket.join(activePlayer.activeGameRoom);
-            // set player side
-            activePlayer.side           = 0;
-            // set nick from client object
-            activePlayer.nick           = player.nick;
+
+            // set player side as black
+            activePlayer.side = 0;
+
             // set invitation game
             activePlayer.invitationGame = false;
             activePlayer.invitationID   = false;
@@ -314,11 +347,12 @@ io.on('connection', function (socket) {
 
     // game invitation
     socket.on('invitation_game', function (player) {
-        // delete openGameRooms for active player
-        openGameRooms.forEach(function (openGameRoom, openGameRoomIndex) {
-            if (openGameRoom.activeGameRoom === activePlayer.activeGameRoom)
-                openGameRooms.splice(openGameRoomIndex, 1);
-        });
+        // set nick from client object
+        activePlayer.nick = player.nick;
+
+        leavePlayerRooms(activePlayer, socket);
+        leavePlayerRooms(activePlayer.opponent(activeGameRooms), socket, 'Opponent resigned. You won!');
+        delete activeGameRooms[activePlayer.activeGameRoom];
 
         // check if player has invitationID set
         if (player.invitationID === false) {
@@ -328,14 +362,12 @@ io.on('connection', function (socket) {
             socket.join(activePlayer.activeGameRoom);
 
             // set as white
-            activePlayer.side           = 1;
-            // set nick from client object
-            activePlayer.nick           = player.nick;
+            activePlayer.side = 1;
+
             // set invitation game
             activePlayer.invitationGame = player.invitationGame;
-
             // make hash value
-            activePlayer.invitationID = crypto.createHash('md5').update(activePlayer.socketId + '::' + timestamp).digest('hex');
+            activePlayer.invitationID   = crypto.createHash('md5').update(activePlayer.socketId + '::' + timestamp).digest('hex');
 
             invitedGameRooms.push(activePlayer);
             io.to(activePlayer.socketId).emit('side', activePlayer, {"action": 'side'});
@@ -356,10 +388,10 @@ io.on('connection', function (socket) {
 
             activePlayer.activeGameRoom = whitePlayer.activeGameRoom;
             socket.join(activePlayer.activeGameRoom);
+
             // set player side
-            activePlayer.side           = 0;
-            // set nick from client object
-            activePlayer.nick           = player.nick;
+            activePlayer.side = 0;
+
             // set invitation game
             activePlayer.invitationGame = player.invitationGame;
             activePlayer.invitationID   = player.invitationID;
@@ -391,19 +423,10 @@ io.on('connection', function (socket) {
 
     // disconnect event
     socket.on('disconnect', function () {
-        // delete openGameRooms of disconnected user
-        openGameRooms.forEach(function (openGameRoom, openGameRoomIndex) {
-            if (openGameRoom.activeGameRoom === activePlayer.activeGameRoom)
-                openGameRooms.splice(openGameRoomIndex, 1);
-        });
+        // close activeGameRoom
+        leavePlayerRooms(activePlayer, socket);
+        leavePlayerRooms(activePlayer.opponent(activeGameRooms), socket, 'Opponent resigned. You won!');
 
-        // delete invitedGameRooms of disconnected user
-        invitedGameRooms.forEach(function (invitedGameRoom, invitedGameRoomIndex) {
-            if (invitedGameRoom.activeGameRoom === activePlayer.activeGameRoom)
-                invitedGameRooms.splice(invitedGameRoomIndex, 1);
-        });
-
-
-        // TODO: preserve activeGameRooms of disconnected user for a while, give option to return to game
+        delete activeGameRooms[activePlayer.activeGameRoom];
     });
 });

@@ -29,6 +29,22 @@
         this[key] = value;
     };
 
+    /**
+     * Player setter
+     */
+    Player.prototype.opponent = function (activeGameRooms) {
+        var room = activeGameRooms[this.activeGameRoom];
+        if (room) {
+            if (room.whitePlayer.socketId === this.socketId) {
+                return room.blackPlayer;
+            }
+
+            return room.whitePlayer;
+        }
+
+        return null;
+    };
+
     exports.Player = Player;
 
 })((typeof exports === 'undefined') ? this['playerModule'] = {} : exports);
