@@ -1,6 +1,6 @@
 {
   "name": "BoardGame",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Chess BoardGame",
   "dependencies": {
     "express": "^4.15.2",
