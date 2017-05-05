@@ -162,7 +162,7 @@ io.on('connection', function (socket) {
 
         // if marked to be promoted, send user message to show dialog to choose figure
         if (entityToMove.promote === true) {
-            io.to(activePlayer.socketId).emit('promote', msg);
+            io.to(activePlayer.socketId).emit('promote', msg, {"action": 'promote'});
             return;
         }
 
@@ -222,7 +222,7 @@ io.on('connection', function (socket) {
                 "entitiesAdded":   activeGameRooms[activePlayer.activeGameRoom].entitiesAdded,
                 "entitiesChanged": activeGameRooms[activePlayer.activeGameRoom].entitiesChanged,
                 "entitiesDeleted": activeGameRooms[activePlayer.activeGameRoom].entitiesDeleted
-            });
+            }, {"action": 'turn complete'});
 
         activeGameRooms[activePlayer.activeGameRoom].entitiesChanged.forEach(function (entity, entityIndex) {
             // clean path and set position
@@ -274,7 +274,7 @@ io.on('connection', function (socket) {
             activePlayer.invitationID   = false;
 
             openGameRooms.push(activePlayer); //{"room": activePlayer.activeGameRoom, "whitePlayer": player}
-            io.to(activePlayer.socketId).emit('side', activePlayer);
+            io.to(activePlayer.socketId).emit('side', activePlayer, {"action": 'side'});
         } else {
             // use existing
             var openGameRoom            = openGameRooms.pop();
@@ -288,7 +288,7 @@ io.on('connection', function (socket) {
             activePlayer.invitationGame = false;
             activePlayer.invitationID   = false;
 
-            io.to(activePlayer.socketId).emit('side', activePlayer);
+            io.to(activePlayer.socketId).emit('side', activePlayer, {"action": 'side'});
 
             // create entities
             var entities = createEntities();
@@ -307,7 +307,8 @@ io.on('connection', function (socket) {
                 "entities":    entities,
                 "whitePlayer": openGameRoom,
                 "blackPlayer": activePlayer
-            }); //"roomId": activePlayer.activeGameRoom,
+                // "roomId": activePlayer.activeGameRoom,
+            }, {"action": 'start_game'});
         }
     });
 
@@ -337,10 +338,10 @@ io.on('connection', function (socket) {
             activePlayer.invitationID = crypto.createHash('md5').update(activePlayer.socketId + '::' + timestamp).digest('hex');
 
             invitedGameRooms.push(activePlayer);
-            io.to(activePlayer.socketId).emit('side', activePlayer);
+            io.to(activePlayer.socketId).emit('side', activePlayer, {"action": 'side'});
         }
         else {
-            var whitePlayer;
+            var whitePlayer = null;
             invitedGameRooms.forEach(function (invitedGameRoom, invitedGameRoomIndex) {
                 if (invitedGameRoom.invitationID === player.invitationID) {
                     whitePlayer = invitedGameRoom;
@@ -348,8 +349,8 @@ io.on('connection', function (socket) {
                 }
             });
 
-            if (!whitePlayer) {
-                io.to(activePlayer.socketId).emit('alert', {"text": "Invitation ID not valid! Try again..."});
+            if (whitePlayer === null) {
+                io.to(activePlayer.socketId).emit('alert', {"text": "Invitation ID not valid! Try again..."}, {"action": 'alert'});
                 return false;
             }
 
@@ -363,7 +364,7 @@ io.on('connection', function (socket) {
             activePlayer.invitationGame = player.invitationGame;
             activePlayer.invitationID   = player.invitationID;
 
-            io.to(activePlayer.socketId).emit('side', activePlayer);
+            io.to(activePlayer.socketId).emit('side', activePlayer, {"action": 'side'});
 
             // create entities
             var entities = createEntities();
@@ -380,25 +381,29 @@ io.on('connection', function (socket) {
 
             // start game
             io.to(activePlayer.activeGameRoom).emit('start_game',
-                {'entities': entities, 'whitePlayer': whitePlayer, 'blackPlayer': activePlayer});
+                {
+                    'entities':    entities,
+                    'whitePlayer': whitePlayer,
+                    'blackPlayer': activePlayer
+                }, {"action": 'start_game'});
         }
     });
 
     // disconnect event
     socket.on('disconnect', function () {
-        // delete openGameRooms of disconected user
+        // delete openGameRooms of disconnected user
         openGameRooms.forEach(function (openGameRoom, openGameRoomIndex) {
             if (openGameRoom.activeGameRoom === activePlayer.activeGameRoom)
                 openGameRooms.splice(openGameRoomIndex, 1);
         });
 
-        // delete invitedGameRooms of disconected user
+        // delete invitedGameRooms of disconnected user
         invitedGameRooms.forEach(function (invitedGameRoom, invitedGameRoomIndex) {
             if (invitedGameRoom.activeGameRoom === activePlayer.activeGameRoom)
                 invitedGameRooms.splice(invitedGameRoomIndex, 1);
         });
 
 
-        // TODO: preserve activeGameRooms of disconected user for a while, give option to return to game
+        // TODO: preserve activeGameRooms of disconnected user for a while, give option to return to game
     });
 });

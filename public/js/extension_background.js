@@ -21,60 +21,10 @@ ExtensionBackground.prototype.initSocketIO = function (request) {
         backgroundProcess.processActions(request);
     });
 
-    this.socket.on('promote', function (msg) {
-        var popupOpen = chrome.extension.getViews({type: "popup"}).length;
-        if (popupOpen)
-            chrome.runtime.sendMessage({action: 'promote', data: msg}, function (response) {
-            });
-        else {
-            backgroundProcess.messageQueue.push({action: 'promote', data: msg});
-            chrome.browserAction.setBadgeText({text: "1"});
-        }
-    });
-
-    this.socket.on('turn complete', function (msg) {
-        var popupOpen = chrome.extension.getViews({type: "popup"}).length;
-        if (popupOpen)
-            chrome.runtime.sendMessage({action: 'turn complete', data: msg}, function (response) {
-            });
-        else {
-            backgroundProcess.messageQueue.push({action: 'turn complete', data: msg});
-            chrome.browserAction.setBadgeText({text: "1"});
-        }
-    });
-
-    this.socket.on('start_game', function (data) {
-        var popupOpen = chrome.extension.getViews({type: "popup"}).length;
-        if (popupOpen)
-            chrome.runtime.sendMessage({action: 'start_game', data: data}, function (response) {
-            });
-        else {
-            backgroundProcess.messageQueue.push({action: 'start_game', data: data});
-            chrome.browserAction.setBadgeText({text: "1"});
-        }
-    });
-
-    this.socket.on('side', function (player) {
-        var popupOpen = chrome.extension.getViews({type: "popup"}).length;
-        if (popupOpen)
-            chrome.runtime.sendMessage({action: 'side', data: player}, function (response) {
-            });
-        else {
-            backgroundProcess.messageQueue.push({action: 'side', data: player});
-            chrome.browserAction.setBadgeText({text: "1"});
-        }
-    });
-
-    this.socket.on('alert', function (data) {
-        var popupOpen = chrome.extension.getViews({type: "popup"}).length;
-        if (popupOpen)
-            chrome.runtime.sendMessage({action: 'alert', data: data}, function (response) {
-            });
-        else {
-            backgroundProcess.messageQueue.push({action: 'alert', data: data});
-            chrome.browserAction.setBadgeText({text: "1"});
-        }
-    });
+    var actions = ['promote', 'turn complete', 'start_game', 'side', 'alert'];
+    for (var i = 0; i < actions.length; i++) {
+        this.socket.on(actions[i], this.backgroundActionListener);
+    }
 };
 
 /**
@@ -96,16 +46,21 @@ ExtensionBackground.prototype.initSocketActions = function () {
 };
 
 ExtensionBackground.prototype.processActions = function (request) {
-    switch (request.action) {
-        case 'move':
-            backgroundProcess.socket.emit('move', request.data);
-            break;
-        case 'ready_for_game':
-            backgroundProcess.socket.emit('ready_for_game', request.data);
-            break;
-        case 'invitation_game':
-            backgroundProcess.socket.emit('invitation_game', request.data);
-            break;
+    var actions = ['move', 'ready_for_game', 'invitation_game'];
+    if (actions.indexOf(request.action) !== -1) {
+        backgroundProcess.socket.emit(request.action, request.data);
+    }
+};
+
+ExtensionBackground.prototype.backgroundActionListener = function (data, meta) {
+    var message   = {action: meta.action, data: data};
+    var popupOpen = chrome.extension.getViews({type: "popup"}).length;
+    if (popupOpen)
+        chrome.runtime.sendMessage(message, function (response) {
+        });
+    else {
+        backgroundProcess.messageQueue.push(message);
+        chrome.browserAction.setBadgeText({text: "1"});
     }
 };
 

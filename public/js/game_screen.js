@@ -624,6 +624,7 @@ GameScreen.prototype.loadActiveScreen = function (loadFromStorage) {
 
     return activeScreen;
 };
+
 /**
  * Store active screen
  */
@@ -639,7 +640,6 @@ GameScreen.prototype.storeActiveScreen = function (activeScreen, loadFromStorage
         localStorage.setItem('activeScreen', objectState);
     else
         chrome.extension.getBackgroundPage().backgroundProcess.activeScreen = objectState;
-
 };
 
 /**
